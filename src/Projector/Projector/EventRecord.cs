@@ -1,6 +1,3 @@
 namespace Projector;
 
-public class EventREcord
-{
-    
-}
+public record EventRecord(object Event, EventPosition Position);

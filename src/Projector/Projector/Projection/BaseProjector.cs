@@ -1,6 +1,6 @@
 using Projector.Checkpointing;
 
-namespace Projector.Projector;
+namespace Projector.Projection;
 
 public abstract class BaseProjector<TConnection> : IProjector
 {

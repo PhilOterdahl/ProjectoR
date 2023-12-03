@@ -1,4 +1,5 @@
 using Projector.Checkpointing;
+using Projector.Projection;
 
 namespace Projector.Projector;
 

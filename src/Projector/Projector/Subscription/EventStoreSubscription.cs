@@ -3,13 +3,13 @@ using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Open.ChannelExtensions;
-using Projection.Projector;
+using Projector.Projection;
 
-namespace Projection.Subscription;
+namespace Projector.Subscription;
 
 public record EventStoreProjectionOptions(int BatchSize = 1000, TimeSpan? BatchTimeout = null);
 
-public class EventStoreProjectionSubscription<TProjector> : IProjectionSubscription where TProjector : IProjector
+internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscription where TProjector : IProjector
 {
     private readonly EventStoreProjectionOptions _options;
     private readonly EventStoreClient _eventStoreClient;
@@ -75,7 +75,8 @@ public class EventStoreProjectionSubscription<TProjector> : IProjectionSubscript
     }
 
     public async Task UpdateProjections(CancellationToken cancellationToken) =>
-        await _eventChannel.Reader
+        await _eventChannel
+            .Reader
             .Batch(_options.BatchSize, true)
             .WithTimeout(_options.BatchTimeout?.Milliseconds ?? 1000)
             .TaskReadAllAsync(cancellationToken, async batch => await Project(batch, cancellationToken));

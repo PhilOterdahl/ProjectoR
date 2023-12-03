@@ -1,4 +1,4 @@
-namespace Projection.Checkpointing;
+namespace Projector.Checkpointing;
 
 public class CheckpointState
 {
