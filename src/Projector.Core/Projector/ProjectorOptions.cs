@@ -22,7 +22,7 @@ public class ProjectorOptions
         return this;
     }
     
-    public ProjectorOptions UseNameSpaceEventTypeResolver<TCustomEventTypeResolver>() where TCustomEventTypeResolver : IEventTypeResolver
+    public ProjectorOptions UseCustomEventTypeResolver<TCustomEventTypeResolver>() where TCustomEventTypeResolver : IEventTypeResolver
     {
         EventTypeResolver = EventTypeResolverType.Custom;
         CustomEventTypeResolverType = typeof(TCustomEventTypeResolver);

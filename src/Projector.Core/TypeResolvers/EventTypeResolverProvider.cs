@@ -11,16 +11,16 @@ public class EventTypeResolverProvider
     {
         _serviceProvider = serviceProvider;
     }
-    
+
     public IEventTypeResolver GetEventTypeResolver(
-        EventTypeResolverType type, 
+        EventTypeResolverType type,
         Type? customEventTypeResolverType,
-        Type[] eventTypes) => 
+        Type[] eventTypes) =>
         type switch
-    {
-        EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(eventTypes),
-        EventTypeResolverType.Custom => GetCustomEventTypeResolver(customEventTypeResolverType)
-    };
+        {
+            EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(eventTypes),
+            EventTypeResolverType.Custom => GetCustomEventTypeResolver(customEventTypeResolverType)
+        };
 
     private NameSpaceEventTypeResolver CreateNameSpaceEventTypeResolver(Type[] eventTypes)
     {

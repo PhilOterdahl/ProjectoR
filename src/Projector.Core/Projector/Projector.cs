@@ -1,20 +1,17 @@
-using Microsoft.Extensions.DependencyInjection;
-using Projector.Core.Checkpointing;
-
 namespace Projector.Core.Projector;
 
-public abstract class Projector<TConnection> : BaseProjector<TConnection>
+public abstract class Projector<TConnection>(TConnection connection, IServiceProvider serviceProvider) : BaseProjector<TConnection>(connection, serviceProvider)
 {
     private readonly Dictionary<Type, Func<TConnection, object, CancellationToken, Task>> _handlers = new();
 
-    public override Type[] EventTypes => _handlers.Keys.ToArray();
-
-    protected Projector(
-        TConnection connection,
-        ICheckpointRepository checkpointRepository,
-        IKeyedServiceProvider serviceProvider): base(connection, checkpointRepository, serviceProvider)
-    {
-    }
+    public override Type[] EventTypes => _handlers
+        .Keys
+        .ToArray();
+    
+    public override string[] EventNames => _handlers
+        .Keys
+        .Select(type => EventTypeResolver.GetName(type))
+        .ToArray();
 
     protected void When<TEvent>(Func<TConnection, TEvent, CancellationToken, Task> handler) 
     {
@@ -35,8 +32,8 @@ public abstract class Projector<TConnection> : BaseProjector<TConnection>
             if (!hasHandler)
                 throw new InvalidOperationException($"No handler found for eventType: {eventType.Name}, for projector: {GetType().Name}");
 
-            await handler!(connection, @event, cancellationToken);
-            await SaveCheckpoint(position, cancellationToken);
+            await handler!(connection, @event, cancellationToken).ConfigureAwait(false);
+            await SaveCheckpoint(position, cancellationToken).ConfigureAwait(false);
         }
     }
 }

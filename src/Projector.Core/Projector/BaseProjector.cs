@@ -16,18 +16,22 @@ public abstract class BaseProjector<TConnection> : IProjector
     public abstract string[] EventNames { get; }
     public abstract Type[] EventTypes { get; }
     public long? Position => _checkpoint?.Position;
-    private readonly IEventTypeResolver _eventTypeResolver;
+    private readonly EventTypeResolverProvider _eventTypeResolverProvider;
+
+    protected IEventTypeResolver EventTypeResolver => _eventTypeResolverProvider.GetEventTypeResolver(
+        _options.EventTypeResolver,
+        _options.CustomEventTypeResolverType,
+        EventTypes
+    );
     
     protected BaseProjector(
         TConnection connection, 
-        IKeyedServiceProvider serviceProvider)
+        IServiceProvider serviceProvider)
     {
         _connection = connection;
         _checkpointRepository = serviceProvider.GetRequiredService<ICheckpointRepository>();
         _options = serviceProvider.GetRequiredKeyedService<ProjectorOptions>(GetType().FullName);
-        _eventTypeResolver = serviceProvider
-            .GetRequiredService<EventTypeResolverProvider>()
-            .GetEventTypeResolver(_options.EventTypeResolver, _options.CustomEventTypeResolverType, EventTypes);
+        _eventTypeResolverProvider = serviceProvider.GetRequiredService<EventTypeResolverProvider>();
     }
     
     protected virtual Task Initialize(TConnection connection, CancellationToken cancellationToken = default) => Task.CompletedTask;
@@ -35,7 +39,9 @@ public abstract class BaseProjector<TConnection> : IProjector
     protected async Task SaveCheckpoint(long lastEventPosition, CancellationToken cancellationToken)
     {
         var newCheckpoint = Checkpoint.CreateCheckpoint(ProjectionName, lastEventPosition);
-        await _checkpointRepository.MakeCheckpoint(newCheckpoint, cancellationToken);
+        await _checkpointRepository
+            .MakeCheckpoint(newCheckpoint, cancellationToken)
+            .ConfigureAwait(false);
         _checkpoint = newCheckpoint;
     }
 
@@ -43,17 +49,18 @@ public abstract class BaseProjector<TConnection> : IProjector
     
     public async Task Start(CancellationToken cancellationToken)
     {
-        _checkpoint = await _checkpointRepository.TryLoad(ProjectionName, cancellationToken);
-        await Initialize(_connection, cancellationToken);
+        _checkpoint = await _checkpointRepository
+            .TryLoad(ProjectionName, cancellationToken)
+            .ConfigureAwait(false);
+        await Initialize(_connection, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task Project(IEnumerable<EventRecord> events, CancellationToken cancellationToken) => await Project(_connection, events, cancellationToken);
-
-    private IEnumerable<object> Deserialize(IEnumerable<(strbyte[])> events)
+    public async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {
-        foreach (var @event in events)
-        {
-            yield return JsonSerializer.Deserialize(_eventTypeResolver.GetType())
-        }
+        var events = eventData
+            .Select(@event => new { @event.Data, type = EventTypeResolver.GetType(@event.EventName), @event.Position })
+            .Select(eventData => new EventRecord(JsonSerializer.Deserialize(eventData.Data, eventData.type), eventData.Position));
+        
+        await Project(_connection, events, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -25,17 +25,19 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
             cancellationToken: cancellationToken
         );
         
-        if (await result.ReadState == ReadState.StreamNotFound)
+        if (await result.ReadState.ConfigureAwait(false) == ReadState.StreamNotFound)
             return null;
 
-        ResolvedEvent? @event = await result.FirstOrDefaultAsync(cancellationToken);
+        ResolvedEvent? @event = await result
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         var state = JsonSerializer.Deserialize<CheckpointState>(@event.Value.Event.Data.ToArray());
         return Checkpoint.FromState(state);
     }
 
     public async Task<Checkpoint> Load(string projectionName, CancellationToken cancellationToken = default) =>
-        await TryLoad(projectionName, cancellationToken) ?? throw new InvalidOperationException($"Checkpoint not found for projection: {projectionName}");
+        await TryLoad(projectionName, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException($"Checkpoint not found for projection: {projectionName}");
 
     public async Task MakeCheckpoint(Checkpoint checkpoint, CancellationToken cancellationToken = default)
     {
@@ -51,32 +53,38 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
         try
         {
             // store new checkpoint expecting stream to exist
-            await _eventStoreClient.AppendToStreamAsync(
-                streamName,
-                StreamState.Any,
-                eventToAppend,
-                cancellationToken: cancellationToken
-            );
+            await _eventStoreClient
+                .AppendToStreamAsync(
+                    streamName,
+                    StreamState.Any,
+                    eventToAppend,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (WrongExpectedVersionException)
         {
             // WrongExpectedVersionException means that stream did not exist
             // Set the checkpoint stream to have at most 1 event
             // using stream metadata $maxCount property
-            await _eventStoreClient.SetStreamMetadataAsync(
-                streamName,
-                StreamState.NoStream,
-                new StreamMetadata(1),
-                cancellationToken: cancellationToken
-            );
+            await _eventStoreClient
+                .SetStreamMetadataAsync(
+                    streamName,
+                    StreamState.NoStream,
+                    new StreamMetadata(1),
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
 
             // append event again expecting stream to not exist
-            await _eventStoreClient.AppendToStreamAsync(
-                streamName,
-                StreamState.NoStream,
-                eventToAppend,
-                cancellationToken: cancellationToken
-            );
+            await _eventStoreClient
+                .AppendToStreamAsync(
+                    streamName,
+                    StreamState.NoStream,
+                    eventToAppend,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
     }
     

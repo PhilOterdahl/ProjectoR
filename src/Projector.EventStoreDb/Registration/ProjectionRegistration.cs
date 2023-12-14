@@ -22,7 +22,7 @@ public static class ProjectionRegistration
             {
                 options = projectionOptions.ProjectorOptions;
             })
-            .AddSingleton(projectionOptions)
+            .AddKeyedSingleton(typeof(TProjector).FullName, projectionOptions)
             .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
         
         services.TryAddSingleton<IHostedService, SubscriptionWorker>();

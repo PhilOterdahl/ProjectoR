@@ -5,7 +5,11 @@ public record EventPosition
     private readonly long _value;
 
     public static implicit operator long(EventPosition position) => position._value;
+    public static implicit operator long?(EventPosition? position) => position?._value;
     public static implicit operator EventPosition(long position) => new(position);
+    public static implicit operator EventPosition?(long? position) => position is not null 
+        ? new(position)
+        : null;
     
     private EventPosition(long position)
     {

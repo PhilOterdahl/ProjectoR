@@ -3,10 +3,9 @@ using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Open.ChannelExtensions;
-using Projector.Core;
 using Projector.Core.Projector;
 using Projector.Core.Subscription;
-using EventRecord = Projector.Core.EventRecord;
+using EventData = Projector.Core.EventData;
 
 namespace Projector.EventStoreDb.Subscription;
 
@@ -64,8 +63,8 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
         await using var scope = _serviceProvider.CreateAsyncScope();
         var serviceProvider = scope.ServiceProvider;
         var projector = serviceProvider.GetRequiredService<TProjector>();
-        var eventTypes = projector.EventTypes;
-        var filter = new SubscriptionFilterOptions(EventTypeFilter.Prefix(eventTypes));
+        var eventNames = projector.EventNames;
+        var filter = new SubscriptionFilterOptions(EventTypeFilter.Prefix(eventNames));
         var subscribePosition = projector.Position;
 
         var position = subscribePosition is null
@@ -103,12 +102,17 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
         await using var scope = _serviceProvider.CreateAsyncScope();
         var serviceProvider = scope.ServiceProvider;
         var projector = serviceProvider.GetRequiredService<TProjector>();
-        var serializer = serviceProvider.GetRequiredService<EventSerializer>();
-
+        
         try
         {
-            var events = batch.Select(@event => new EventRecord(serializer.Deserialize(@event), (long)@event.Event.Position.CommitPosition));
-            await projector.Project(events, cancellationToken);
+            var eventData = batch.Select(resolvedEvent =>
+                new EventData(
+                    resolvedEvent.Event.EventType,
+                    resolvedEvent.Event.Data.ToArray(),
+                    (long)resolvedEvent.Event.Position.CommitPosition
+                )
+            );
+            await projector.Project(eventData, cancellationToken);
         }
         catch (Exception exception)
         {
