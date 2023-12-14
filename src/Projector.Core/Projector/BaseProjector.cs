@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Projector.Core.Checkpointing;
+using Projector.Core.TypeResolvers;
 
 namespace Projector.Core.Projector;
 
@@ -14,15 +16,18 @@ public abstract class BaseProjector<TConnection> : IProjector
     public abstract string[] EventNames { get; }
     public abstract Type[] EventTypes { get; }
     public long? Position => _checkpoint?.Position;
+    private readonly IEventTypeResolver _eventTypeResolver;
     
     protected BaseProjector(
         TConnection connection, 
-        ICheckpointRepository checkpointRepository, 
         IKeyedServiceProvider serviceProvider)
     {
         _connection = connection;
-        _checkpointRepository = checkpointRepository;
+        _checkpointRepository = serviceProvider.GetRequiredService<ICheckpointRepository>();
         _options = serviceProvider.GetRequiredKeyedService<ProjectorOptions>(GetType().FullName);
+        _eventTypeResolver = serviceProvider
+            .GetRequiredService<EventTypeResolverProvider>()
+            .GetEventTypeResolver(_options.EventTypeResolver, _options.CustomEventTypeResolverType, EventTypes);
     }
     
     protected virtual Task Initialize(TConnection connection, CancellationToken cancellationToken = default) => Task.CompletedTask;
@@ -43,4 +48,12 @@ public abstract class BaseProjector<TConnection> : IProjector
     }
 
     public async Task Project(IEnumerable<EventRecord> events, CancellationToken cancellationToken) => await Project(_connection, events, cancellationToken);
+
+    private IEnumerable<object> Deserialize(IEnumerable<(strbyte[])> events)
+    {
+        foreach (var @event in events)
+        {
+            yield return JsonSerializer.Deserialize(_eventTypeResolver.GetType())
+        }
+    }
 }

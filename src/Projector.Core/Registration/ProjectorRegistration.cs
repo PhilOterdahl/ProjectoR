@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Projector.Core.Projector;
 using Projector.Core.TypeResolvers;
 
@@ -14,23 +15,10 @@ public static class ProjectorRegistration
         configure?.Invoke(settings);
         var key = typeof(TProjector).FullName;
         
+        services.TryAddScoped<EventTypeResolverProvider>();
+        
         return services
-            .AddKeyedScoped<IEventTypeResolver>(key,)
             .AddKeyedSingleton(key, settings)
             .AddScoped<TProjector>();
-    }
-
-    private static IServiceCollection AddEventTypeResolver(
-        this IServiceCollection services,
-        string key,
-        EventTypeResolverType resolverType)
-    {
-        
-        return  resolverType switch 
-        {
-            EventTypeResolverType.Namespace => services.AddKeyedScoped<IEventTypeResolver>(key, )
-
-        };
-
     }
 }

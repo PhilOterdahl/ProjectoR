@@ -1,14 +1,14 @@
 namespace Projector.Core.TypeResolvers;
 
-internal class NameSpaceEventTypeResolver : EventTypeResolver
+internal class NameSpaceEventTypeResolver : IEventTypeResolver
 {
-    private readonly Dictionary<string, Type> _eventTypes;
+    private Dictionary<string, Type> _eventTypes;
 
-    public NameSpaceEventTypeResolver(IEnumerable<Type> eventTypes)
+    public void SetEventTypes(IEnumerable<Type> eventTypes)
     {
         _eventTypes = eventTypes.ToDictionary(type => type.FullName);
     }
-    
+
     public Type GetType(string eventName)
     {
         return _eventTypes.TryGetValue(eventName, out var type)
