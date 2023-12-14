@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projector.Core", "Projector.Core\Projector.Core.csproj", "{771F512B-B982-4C6D-A228-6867844F895A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projector.EventStoreDB", "Projector.EventStoreDB\Projector.EventStoreDB.csproj", "{E586C1D9-57BC-4103-B594-4984B1367502}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{877A07AC-BF0D-4A0F-A919-679BF850BAD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projector.Examples.EventStoreDB", "..\samples\Projector.Examples.EventStoreDB\Projector.Examples.EventStoreDB.csproj", "{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{771F512B-B982-4C6D-A228-6867844F895A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{771F512B-B982-4C6D-A228-6867844F895A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{771F512B-B982-4C6D-A228-6867844F895A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{771F512B-B982-4C6D-A228-6867844F895A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E586C1D9-57BC-4103-B594-4984B1367502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E586C1D9-57BC-4103-B594-4984B1367502}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E586C1D9-57BC-4103-B594-4984B1367502}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E586C1D9-57BC-4103-B594-4984B1367502}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB} = {877A07AC-BF0D-4A0F-A919-679BF850BAD5}
+	EndGlobalSection
+EndGlobal
