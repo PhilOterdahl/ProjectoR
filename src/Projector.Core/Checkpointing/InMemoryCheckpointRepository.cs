@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Projector.Core.Checkpointing;
+namespace ProjectoR.Core.Checkpointing;
 
 public class InMemoryCheckpointRepository : ICheckpointRepository
 {

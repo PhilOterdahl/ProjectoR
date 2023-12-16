@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Projector.Examples.EventStoreDB;
+namespace ProjectoR.Examples.EventStoreDB;
 
 public class UserProjectionConfiguration : IEntityTypeConfiguration<UserProjection>
 {

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Projector.Core.Projector;
-using Projector.Examples.EventStoreDB.Data;
+using ProjectoR.Core.Projector;
+using ProjectoR.Examples.EventStoreDB.Data;
 
-namespace Projector.Examples.EventStoreDB;
+namespace ProjectoR.Examples.EventStoreDB;
 
 public record UserEnrolled(
     Guid Id,
@@ -10,6 +10,7 @@ public record UserEnrolled(
     string LastName,
     string Email,
     string Mobile,
+    string Country,
     string City,
     string PostalCode,
     string Street
@@ -28,7 +29,7 @@ public record UserChangedContactInformation(
     string Email
 );
 
-public record UserQuit(Guid Id);
+public record UserQuit(Guid Id, string Country);
 
 public class UserProjector : Projector<UserContext>
 {
@@ -38,7 +39,7 @@ public class UserProjector : Projector<UserContext>
     {
         When<UserEnrolled>(async (context, enrolled, cancellation) =>
         {
-            context.Users.Add(new UserProjection
+            context.UsersProjections.Add(new UserProjection
             {
                 Id = enrolled.Id,
                 FirstName = enrolled.FirstName,
@@ -61,7 +62,7 @@ public class UserProjector : Projector<UserContext>
         When<UserMoved>(async (context, moved, cancellationToken) =>
         {
             await context
-                .Users
+                .UsersProjections
                 .Where(user => user.Id == moved.Id)
                 .ExecuteUpdateAsync(calls => calls
                     .SetProperty(projection => projection.Address.City, moved.City)
@@ -75,7 +76,7 @@ public class UserProjector : Projector<UserContext>
         When<UserChangedContactInformation>(async (context, changedContactInformation, cancellationToken) =>
         {
             await context
-                .Users
+                .UsersProjections
                 .Where(user => user.Id == changedContactInformation.Id)
                 .ExecuteUpdateAsync(calls => calls
                         .SetProperty(projection => projection.ContactInformation.Email, changedContactInformation.Email)
@@ -87,7 +88,7 @@ public class UserProjector : Projector<UserContext>
         When<UserQuit>(async (context, changedContactInformation, cancellationToken) =>
         {
             await context
-                .Users
+                .UsersProjections
                 .Where(user => user.Id == changedContactInformation.Id)
                 .ExecuteDeleteAsync(cancellationToken);
         });

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Projector.Core.Subscription;
+namespace ProjectoR.Core.Subscription;
 
 public class SubscriptionWorker : BackgroundService
 {

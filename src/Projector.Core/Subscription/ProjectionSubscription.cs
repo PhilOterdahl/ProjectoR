@@ -1,4 +1,4 @@
-namespace Projector.Core.Subscription;
+namespace ProjectoR.Core.Subscription;
 
 public interface IProjectionSubscription
 {

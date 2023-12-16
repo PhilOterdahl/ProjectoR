@@ -1,23 +1,17 @@
 using System.Text.Json;
 using EventStore.Client;
-using Projector.Core.Checkpointing;
+using Humanizer;
+using ProjectoR.Core.Checkpointing;
 
-namespace Projector.EventStoreDB.Checkpointing;
+namespace ProjectoR.EventStoreDB.Checkpointing;
 
-internal class EventStoreDBCheckpointRepository : ICheckpointRepository
+internal class EventStoreDBCheckpointRepository(EventStoreClient eventStoreClient) : ICheckpointRepository
 {
-    private readonly EventStoreClient _eventStoreClient;
-
-    public EventStoreDBCheckpointRepository(EventStoreClient eventStoreClient)
-    {
-        _eventStoreClient = eventStoreClient;
-    }
-
     public async Task<Checkpoint?> TryLoad(string projectionName, CancellationToken cancellationToken = default)
     {
         var streamName = GetCheckpointStreamName(projectionName);
         
-        var result = _eventStoreClient.ReadStreamAsync(
+        var result = eventStoreClient.ReadStreamAsync(
             Direction.Backwards, 
             streamName,
             StreamPosition.End,
@@ -53,7 +47,7 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
         try
         {
             // store new checkpoint expecting stream to exist
-            await _eventStoreClient
+            await eventStoreClient
                 .AppendToStreamAsync(
                     streamName,
                     StreamState.Any,
@@ -67,7 +61,7 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
             // WrongExpectedVersionException means that stream did not exist
             // Set the checkpoint stream to have at most 1 event
             // using stream metadata $maxCount property
-            await _eventStoreClient
+            await eventStoreClient
                 .SetStreamMetadataAsync(
                     streamName,
                     StreamState.NoStream,
@@ -77,7 +71,7 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
                 .ConfigureAwait(false);
 
             // append event again expecting stream to not exist
-            await _eventStoreClient
+            await eventStoreClient
                 .AppendToStreamAsync(
                     streamName,
                     StreamState.NoStream,
@@ -88,5 +82,5 @@ internal class EventStoreDBCheckpointRepository : ICheckpointRepository
         }
     }
     
-    private static string GetCheckpointStreamName(string projectionName) => $"checkpoint_{projectionName}";
+    private static string GetCheckpointStreamName(string projectionName) => $"checkpoint_{projectionName.Underscore()}";
 }

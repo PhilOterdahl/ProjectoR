@@ -1,24 +1,20 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Projector.Core.Projector;
-using Projector.Core.TypeResolvers;
+using ProjectoR.Core.Subscription;
+using ProjectoR.Core.TypeResolvers;
 
-namespace Projector.Core.Registration;
+namespace ProjectoR.Core.Registration;
 
-public static class ProjectorRegistration
+public static class ProjectoRRegistration
 {
-    public static IServiceCollection AddProjector<TProjector>(
-        this IServiceCollection services, 
-        Action<ProjectorOptions> configure) where TProjector : class, IProjector
+    public static IServiceCollection AddProjectoR(
+        this IServiceCollection services,
+        Action<ProjectoRConfigurator> configure)
     {
-        var settings = new ProjectorOptions();
-        configure?.Invoke(settings);
-        var key = typeof(TProjector).FullName;
-        
-        services.TryAddScoped<EventTypeResolverProvider>();
-        
+        var configurator = new ProjectoRConfigurator(services);
+        configure(configurator);
+
         return services
-            .AddKeyedSingleton(key, settings)
-            .AddScoped<TProjector>();
+            .AddSingleton<EventTypeResolverProvider>()
+            .AddHostedService<SubscriptionWorker>();
     }
 }

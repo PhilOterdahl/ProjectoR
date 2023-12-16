@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Projector.Examples.EventStoreDB.Data;
+using ProjectoR.Examples.EventStoreDB.Data;
 
 #nullable disable
 
-namespace Projector.Examples.EventStoreDB.Migrations
+namespace ProjectoR.Examples.EventStoreDB.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20231214214127_Initial")]
+    [Migration("20231216183314_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,20 @@ namespace Projector.Examples.EventStoreDB.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Projector.Examples.EventStoreDB.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.Data.NumberOfActiveUsersProjection", b =>
+                {
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Country");
+
+                    b.ToTable("NumberOfActiveUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -44,9 +57,9 @@ namespace Projector.Examples.EventStoreDB.Migrations
                     b.ToTable("User", "Projection");
                 });
 
-            modelBuilder.Entity("Projector.Examples.EventStoreDB.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
                 {
-                    b.OwnsOne("Projector.Examples.EventStoreDB.Address", "Address", b1 =>
+                    b.OwnsOne("ProjectoR.Examples.EventStoreDB.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");
@@ -71,7 +84,7 @@ namespace Projector.Examples.EventStoreDB.Migrations
                                 .HasForeignKey("UserProjectionId");
                         });
 
-                    b.OwnsOne("Projector.Examples.EventStoreDB.ContactInformation", "ContactInformation", b1 =>
+                    b.OwnsOne("ProjectoR.Examples.EventStoreDB.ContactInformation", "ContactInformation", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");

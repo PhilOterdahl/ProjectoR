@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Projector.Core.TypeResolvers;
+using ProjectoR.Core.TypeResolvers;
 
-namespace Projector.Core.Projector;
+namespace ProjectoR.Core.Projector;
 
 public enum EventTypeResolverType
 {
@@ -13,6 +13,7 @@ public class ProjectorOptions
 {
     public JsonSerializerOptions SerializerOptions { get; set; } = JsonSerializerOptions.Default;
     public EventTypeResolverType EventTypeResolver { get; private set; } = EventTypeResolverType.Namespace;
+    public EventTypeResolverCasing Casing { get; private set; } = EventTypeResolverCasing.KebabCase;
     
     internal Type? CustomEventTypeResolverType { get; private set; }
 
@@ -26,6 +27,30 @@ public class ProjectorOptions
     {
         EventTypeResolver = EventTypeResolverType.Custom;
         CustomEventTypeResolverType = typeof(TCustomEventTypeResolver);
+        return this;
+    }
+    
+    public ProjectorOptions UseSnakeCaseEventNaming()
+    {
+        Casing = EventTypeResolverCasing.SnakeCase;
+        return this;
+    }
+    
+    public ProjectorOptions UsePascalCaseEventNaming()
+    {
+        Casing = EventTypeResolverCasing.PascalCase;
+        return this;
+    }
+    
+    public ProjectorOptions UseCamelCaseEventNaming()
+    {
+        Casing = EventTypeResolverCasing.CamelCase;
+        return this;
+    }
+    
+    public ProjectorOptions UseKebabCaseEventNaming()
+    {
+        Casing = EventTypeResolverCasing.KebabCase;
         return this;
     }
 }

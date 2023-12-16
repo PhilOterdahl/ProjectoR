@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Projector.Examples.EventStoreDB.Migrations
+namespace ProjectoR.Examples.EventStoreDB.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -13,6 +13,18 @@ namespace Projector.Examples.EventStoreDB.Migrations
         {
             migrationBuilder.EnsureSchema(
                 name: "Projection");
+
+            migrationBuilder.CreateTable(
+                name: "NumberOfActiveUsers",
+                columns: table => new
+                {
+                    Country = table.Column<string>(type: "text", nullable: false),
+                    Number = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NumberOfActiveUsers", x => x.Country);
+                });
 
             migrationBuilder.CreateTable(
                 name: "User",
@@ -37,6 +49,9 @@ namespace Projector.Examples.EventStoreDB.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "NumberOfActiveUsers");
+
             migrationBuilder.DropTable(
                 name: "User",
                 schema: "Projection");

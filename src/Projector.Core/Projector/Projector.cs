@@ -1,4 +1,4 @@
-namespace Projector.Core.Projector;
+namespace ProjectoR.Core.Projector;
 
 public abstract class Projector<TConnection>(TConnection connection, IServiceProvider serviceProvider) : BaseProjector<TConnection>(connection, serviceProvider)
 {

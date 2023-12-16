@@ -3,15 +3,15 @@ using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Open.ChannelExtensions;
-using Projector.Core.Projector;
-using Projector.Core.Subscription;
-using EventData = Projector.Core.EventData;
+using ProjectoR.Core.Projector;
+using ProjectoR.Core.Subscription;
+using Core_EventData = ProjectoR.Core.EventData;
 
-namespace Projector.EventStoreDb.Subscription;
+namespace ProjectoR.EventStoreDb.Subscription;
 
 public class EventStoreProjectionOptions
 {
-    public ProjectorOptions ProjectorOptions { get; set; }
+    public ProjectorOptions ProjectorOptions { get; set; } = new();
     public int BatchSize { get; set; } = 1000;
     public TimeSpan BatchTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 }
@@ -106,7 +106,7 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
         try
         {
             var eventData = batch.Select(resolvedEvent =>
-                new EventData(
+                new Core_EventData(
                     resolvedEvent.Event.EventType,
                     resolvedEvent.Event.Data.ToArray(),
                     (long)resolvedEvent.Event.Position.CommitPosition

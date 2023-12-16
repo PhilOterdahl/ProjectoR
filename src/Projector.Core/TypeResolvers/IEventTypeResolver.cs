@@ -1,4 +1,4 @@
-namespace Projector.Core.TypeResolvers;
+namespace ProjectoR.Core.TypeResolvers;
 
 public interface IEventTypeResolver
 {

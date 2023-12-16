@@ -1,4 +1,4 @@
-namespace Projector.Core.Projector;
+namespace ProjectoR.Core.Projector;
 
 public interface IProjector
 {

@@ -5,6 +5,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>ProjectoR.Examples.EventStoreDB</AssemblyName>
+        <RootNamespace>ProjectoR.Examples.EventStoreDB</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +25,10 @@
       <None Update="appsettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

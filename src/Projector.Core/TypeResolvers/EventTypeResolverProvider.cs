@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Projector.Core.Projector;
+using ProjectoR.Core.EventNameFormatters;
+using ProjectoR.Core.Projector;
 
-namespace Projector.Core.TypeResolvers;
+namespace ProjectoR.Core.TypeResolvers;
 
 public class EventTypeResolverProvider
 {
@@ -14,22 +15,32 @@ public class EventTypeResolverProvider
 
     public IEventTypeResolver GetEventTypeResolver(
         EventTypeResolverType type,
+        EventTypeResolverCasing casing,
         Type? customEventTypeResolverType,
         Type[] eventTypes) =>
         type switch
         {
-            EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(eventTypes),
+            EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(casing, eventTypes),
             EventTypeResolverType.Custom => GetCustomEventTypeResolver(customEventTypeResolverType)
         };
 
-    private NameSpaceEventTypeResolver CreateNameSpaceEventTypeResolver(Type[] eventTypes)
+    private NameSpaceEventTypeResolver CreateNameSpaceEventTypeResolver(EventTypeResolverCasing casing, Type[] eventTypes)
     {
-        var resolver = new NameSpaceEventTypeResolver();
+        var resolver = new NameSpaceEventTypeResolver(GetEventNameFormatter(casing));
         resolver.SetEventTypes(eventTypes);
         return resolver;
     }
     
-    private IEventTypeResolver GetCustomEventTypeResolver(
-        Type customResolverType) =>
+    private IEventTypeResolver GetCustomEventTypeResolver(Type customResolverType) =>
         (IEventTypeResolver)_serviceProvider.GetRequiredService(customResolverType);
+
+    private IEventNameFormatter GetEventNameFormatter(EventTypeResolverCasing casing) =>
+        casing switch
+        {
+            EventTypeResolverCasing.CamelCase => new CamelCaseEventNameFormatter(),
+            EventTypeResolverCasing.KebabCase => new KebabCaseEventNameFormatter(),
+            EventTypeResolverCasing.PascalCase => new PascalCaseEventNameFormatter(),
+            EventTypeResolverCasing.SnakeCase => new SnakeCaseEventNameFormatter(),
+            _ => throw new ArgumentOutOfRangeException(nameof(casing), casing, null)
+        };
 }

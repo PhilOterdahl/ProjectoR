@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Projector.Core.Checkpointing;
-using Projector.Core.TypeResolvers;
+using ProjectoR.Core.Checkpointing;
+using ProjectoR.Core.TypeResolvers;
 
-namespace Projector.Core.Projector;
+namespace ProjectoR.Core.Projector;
 
 public abstract class BaseProjector<TConnection> : IProjector
 {
@@ -20,6 +20,7 @@ public abstract class BaseProjector<TConnection> : IProjector
 
     protected IEventTypeResolver EventTypeResolver => _eventTypeResolverProvider.GetEventTypeResolver(
         _options.EventTypeResolver,
+        _options.Casing,
         _options.CustomEventTypeResolverType,
         EventTypes
     );

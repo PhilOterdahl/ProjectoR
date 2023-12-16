@@ -1,4 +1,4 @@
-namespace Projector.Core.Checkpointing;
+namespace ProjectoR.Core.Checkpointing;
 
 public interface ICheckpointRepository
 { 

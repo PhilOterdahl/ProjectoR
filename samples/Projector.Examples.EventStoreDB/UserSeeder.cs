@@ -2,8 +2,9 @@ using System.Text.Json;
 using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProjectoR.Core.EventNameFormatters;
 
-namespace Projector.Examples.EventStoreDB;
+namespace ProjectoR.Examples.EventStoreDB;
 
 public class UserSeeder : BackgroundService
 {
@@ -33,6 +34,7 @@ public class UserSeeder : BackgroundService
                 "Silva",
                 "Pepe.Silva@hotmail.com",
                 "0732603999",
+                "USA",
                 "Philadelphia",
                 "19019",
                 "Apple Blossom Way 13"
@@ -43,6 +45,7 @@ public class UserSeeder : BackgroundService
                 "Kelly",
                 "Charlie.Kelly@hotmail.com",
                 "0732623429",
+                "USA",
                 "Philadelphia",
                 "19019",
                 "Apple Blossom Way 13"
@@ -53,6 +56,7 @@ public class UserSeeder : BackgroundService
                 "Reynlods",
                 "Dennis.Reynlods@hotmail.com",
                 "073260312399",
+                "USA",
                 "Philadelphia",
                 "19021",
                 "Audubon Plaza 18"
@@ -67,12 +71,17 @@ public class UserSeeder : BackgroundService
                 pepeId,
                 "04565567567",
                 "Pepe.Sliva@hotmail.com"
-            )
+            ),
+            new UserQuit(
+                dennisId,
+               "USA"
+            ),
         };
 
+        var formatter = new KebabCaseEventNameFormatter();
         var data = events.Select(@event => new EventData(
             Uuid.NewUuid(),
-            @event.GetType().FullName,
+            formatter.Format(@event.GetType().FullName),
             JsonSerializer.SerializeToUtf8Bytes(@event).ToArray()
         ));
         

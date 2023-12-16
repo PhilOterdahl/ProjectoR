@@ -1,4 +1,4 @@
-namespace Projector.Core;
+namespace ProjectoR.Core;
 
 public record EventPosition
 {
