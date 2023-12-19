@@ -5,7 +5,6 @@ namespace ProjectoR.Examples.EventStoreDB.Data;
 public class UserContext : DbContext
 {
     public DbSet<UserProjection> UsersProjections { get; set; }
-    public DbSet<NumberOfActiveUsersProjection> NumberOfActiveUsersProjections { get; set; }
     
     public UserContext(DbContextOptions<UserContext> options) : base(options)
     {

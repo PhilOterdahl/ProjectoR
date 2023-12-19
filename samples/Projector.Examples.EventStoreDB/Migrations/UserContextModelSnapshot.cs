@@ -22,19 +22,6 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.Data.NumberOfActiveUsersProjection", b =>
-                {
-                    b.Property<string>("Country")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Country");
-
-                    b.ToTable("NumberOfActiveUsers", (string)null);
-                });
-
             modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
                 {
                     b.Property<Guid>("Id")

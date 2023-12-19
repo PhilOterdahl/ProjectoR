@@ -11,7 +11,7 @@ public interface IEventStoreDbConfigurator
 {
     IEventStoreDbConfigurator UseEventStoreDBCheckpointing();
 
-    IEventStoreDbConfigurator UseProjector<TProjector>(Action<EventStoreProjectionOptions>? configure = null) where TProjector : class, IProjector;
+    IEventStoreDbConfigurator UseProjector<TProjector>(Action<EventStoreProjectionOptions>? configure = null) where TProjector : class;
 }
 
 public class EventStoreDbConfigurator : IEventStoreDbConfigurator
@@ -32,18 +32,18 @@ public class EventStoreDbConfigurator : IEventStoreDbConfigurator
         return this;
     }
     
-    public IEventStoreDbConfigurator UseProjector<TProjector>(Action<EventStoreProjectionOptions>? configure = null) where TProjector : class, IProjector
+    public IEventStoreDbConfigurator UseProjector<TProjector>(Action<EventStoreProjectionOptions>? configure = null) where TProjector : class
     {
         var options = new EventStoreProjectionOptions();
         configure?.Invoke(options);
-        var key = typeof(TProjector).FullName;
-        
+
+        var projectorConfigurator = new ProjectorConfigurator(_services);
+
+        projectorConfigurator.UseProjector<TProjector>(projectorOptions => projectorOptions = options.ProjectorOptions);
+
         _services
-            .AddKeyedSingleton(key, options)
-            .AddKeyedSingleton(key, options.ProjectorOptions)
-            .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>()
-     
-            .AddScoped<TProjector>();
+            .AddKeyedSingleton(projectorConfigurator.ProjectionName, options)
+            .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
 
         return this;
     }

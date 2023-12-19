@@ -12,7 +12,7 @@ using ProjectoR.Examples.EventStoreDB.Data;
 namespace ProjectoR.Examples.EventStoreDB.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20231216183314_Initial")]
+    [Migration("20231219210306_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,19 +24,6 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.Data.NumberOfActiveUsersProjection", b =>
-                {
-                    b.Property<string>("Country")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Country");
-
-                    b.ToTable("NumberOfActiveUsers", (string)null);
-                });
 
             modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
                 {

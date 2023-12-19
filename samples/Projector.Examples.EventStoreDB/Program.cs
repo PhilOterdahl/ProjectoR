@@ -28,12 +28,8 @@ builder
                     .UseEventStoreDBCheckpointing()
                     .UseProjector<UserProjector>(configure =>
                     {
-                        configure.ProjectorOptions
-                            .UseNameSpaceEventTypeResolver()
-                            .UseKebabCaseEventNaming();
-                    })
-                    .UseProjector<NumberOfActiveUsersProjector>(configure =>
-                    {
+                        configure.BatchSize = 1000;
+                        configure.BatchTimeout = TimeSpan.FromSeconds(30);
                         configure.ProjectorOptions
                             .UseNameSpaceEventTypeResolver()
                             .UseKebabCaseEventNaming();

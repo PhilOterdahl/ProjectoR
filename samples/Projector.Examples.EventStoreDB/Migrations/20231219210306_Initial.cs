@@ -15,18 +15,6 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
                 name: "Projection");
 
             migrationBuilder.CreateTable(
-                name: "NumberOfActiveUsers",
-                columns: table => new
-                {
-                    Country = table.Column<string>(type: "text", nullable: false),
-                    Number = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NumberOfActiveUsers", x => x.Country);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "User",
                 schema: "Projection",
                 columns: table => new
@@ -49,9 +37,6 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "NumberOfActiveUsers");
-
             migrationBuilder.DropTable(
                 name: "User",
                 schema: "Projection");

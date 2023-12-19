@@ -16,13 +16,14 @@ public class EventStoreProjectionOptions
     public TimeSpan BatchTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 }
 
-internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscription where TProjector : IProjector
+internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscription 
 {
     private readonly EventStoreProjectionOptions _options;
     private readonly EventStoreClient _eventStoreClient;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<EventStoreProjectionSubscription<TProjector>> _logger;
     private readonly Channel<ResolvedEvent> _eventChannel;
+    private readonly ProjectorService<TProjector> _projectorService;
 
     private bool _stopping;
     private StreamSubscription _subscription;
@@ -35,7 +36,8 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
         _eventStoreClient = eventStoreClient;
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _options = serviceProvider.GetRequiredKeyedService<EventStoreProjectionOptions>(typeof(TProjector).FullName);
+        _projectorService = serviceProvider.GetRequiredService<ProjectorService<TProjector>>();
+        _options = serviceProvider.GetRequiredKeyedService<EventStoreProjectionOptions>(_projectorService.ProjectionName);
         _eventChannel = Channel.CreateBounded<ResolvedEvent>(
             new BoundedChannelOptions(_options.BatchSize*10)
             {
@@ -45,14 +47,12 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
                 AllowSynchronousContinuations = false
             }
         );
+       
     }
     
     public async Task Initialize(CancellationToken cancellationToken)
     {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var serviceProvider = scope.ServiceProvider;
-        var projector = serviceProvider.GetRequiredService<TProjector>();
-        await projector.Start(cancellationToken);
+        await _projectorService.Start(cancellationToken);
     }
 
     public async Task Subscribe(CancellationToken cancellationToken)
@@ -61,11 +61,9 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
             return;
 
         await using var scope = _serviceProvider.CreateAsyncScope();
-        var serviceProvider = scope.ServiceProvider;
-        var projector = serviceProvider.GetRequiredService<TProjector>();
-        var eventNames = projector.EventNames;
+        var eventNames = _projectorService.EventNames;
         var filter = new SubscriptionFilterOptions(EventTypeFilter.Prefix(eventNames));
-        var subscribePosition = projector.Position;
+        var subscribePosition = _projectorService.Position;
 
         var position = subscribePosition is null
             ? FromAll.Start
@@ -75,7 +73,7 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
             position,
             EventAppeared,
             false,
-            (_, reason, exception) => SubscriptionDropped(reason, projector.ProjectionName, exception, cancellationToken),
+            (_, reason, exception) => SubscriptionDropped(reason, _projectorService.ProjectionName, exception, cancellationToken),
             filter,
             cancellationToken: cancellationToken);
     }
@@ -99,10 +97,6 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
         if (_stopping)
             return;
         
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var serviceProvider = scope.ServiceProvider;
-        var projector = serviceProvider.GetRequiredService<TProjector>();
-        
         try
         {
             var eventData = batch.Select(resolvedEvent =>
@@ -112,14 +106,14 @@ internal class EventStoreProjectionSubscription<TProjector> : IProjectionSubscri
                     (long)resolvedEvent.Event.Position.CommitPosition
                 )
             );
-            await projector.Project(eventData, cancellationToken);
+            await _projectorService.Project(eventData, cancellationToken);
         }
         catch (Exception exception)
         {
             _logger.LogError(
                 exception,
                 "Error when updating projection: {projection}",
-                projector.ProjectionName
+                _projectorService.ProjectionName
             );
 
             await Stop(cancellationToken);
