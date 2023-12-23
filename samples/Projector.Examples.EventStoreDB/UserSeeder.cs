@@ -3,6 +3,8 @@ using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProjectoR.Core.EventNameFormatters;
+using ProjectoR.Core.Projector;
+using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Examples.EventStoreDB;
 
@@ -28,7 +30,7 @@ public class UserSeeder : BackgroundService
 
         var events = new object[]
         {
-            new UserEnrolled(
+            new User.Enrolled(
                 pepeId,
                 "Pepe",
                 "Silva",
@@ -39,7 +41,7 @@ public class UserSeeder : BackgroundService
                 "19019",
                 "Apple Blossom Way 13"
             ),
-            new UserEnrolled(
+            new User.Enrolled(
                 charlieId,
                 "Charlie",
                 "Kelly",
@@ -50,7 +52,7 @@ public class UserSeeder : BackgroundService
                 "19019",
                 "Apple Blossom Way 13"
             ),
-            new UserEnrolled(
+            new User.Enrolled(
                 dennisId,
                 "Dennis",
                 "Reynlods",
@@ -61,27 +63,35 @@ public class UserSeeder : BackgroundService
                 "19021",
                 "Audubon Plaza 18"
             ),
-            new UserMoved(
+            new User.Moved(
                 dennisId,
                 "Philadelphia",
                 "19014",
                 "Bellevue Steet 15"
             ),
-            new UserChangedContactInformation(
+            new User.ChangedContactInformation(
                 pepeId,
                 "04565567567",
                 "Pepe.Sliva@hotmail.com"
             ),
-            new UserQuit(
+            new User.Quit(
                 dennisId,
                "USA"
             ),
         };
-
-        var formatter = new KebabCaseEventNameFormatter();
+        
+        var options = provider.GetRequiredKeyedService<ProjectorOptions>("User");
+        var eventTypeResolver = provider.GetRequiredService<EventTypeResolverProvider>()
+            .GetEventTypeResolver(
+                options.EventTypeResolver,
+                options.Casing,
+                options.CustomEventTypeResolverType,
+                events.Select(@event => @event.GetType()).Distinct().ToArray()
+            );
+        
         var data = events.Select(@event => new EventData(
             Uuid.NewUuid(),
-            formatter.Format(@event.GetType().FullName),
+            eventTypeResolver.GetName(@event.GetType()),
             JsonSerializer.SerializeToUtf8Bytes(@event).ToArray()
         ));
         

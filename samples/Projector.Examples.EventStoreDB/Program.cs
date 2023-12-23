@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProjectoR.Core.Registration;
-using ProjectoR.EventStoreDB.Checkpointing;
 using ProjectoR.EventStoreDb.Registration;
 using ProjectoR.Examples.EventStoreDB;
 using ProjectoR.Examples.EventStoreDB.Data;
@@ -30,9 +28,9 @@ builder
                     {
                         configure.BatchSize = 1000;
                         configure.BatchTimeout = TimeSpan.FromSeconds(30);
-                        configure.ProjectorOptions
-                            .UseNameSpaceEventTypeResolver()
-                            .UseKebabCaseEventNaming();
+                        configure
+                            .UseClassNameEventTypeResolver()
+                            .UseSnakeCaseEventNaming();
                     });
             }
         );

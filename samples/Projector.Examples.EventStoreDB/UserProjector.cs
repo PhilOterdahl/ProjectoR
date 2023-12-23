@@ -3,35 +3,38 @@ using ProjectoR.Examples.EventStoreDB.Data;
 
 namespace ProjectoR.Examples.EventStoreDB;
 
-public record UserEnrolled(
-    Guid Id,
-    string FirstName,
-    string LastName,
-    string Email,
-    string Mobile,
-    string Country,
-    string City,
-    string PostalCode,
-    string Street
-);
+public class User
+{
+    public record Enrolled(
+        Guid Id,
+        string FirstName,
+        string LastName,
+        string Email,
+        string Mobile,
+        string Country,
+        string City,
+        string PostalCode,
+        string Street
+    );
 
-public record UserMoved(
-    Guid Id,
-    string City,
-    string PostalCode,
-    string Street
-);
+    public record Moved(
+        Guid Id,
+        string City,
+        string PostalCode,
+        string Street
+    );
 
-public record UserChangedContactInformation(
-    Guid Id,
-    string Mobile,
-    string Email
-);
+    public record ChangedContactInformation(
+        Guid Id,
+        string Mobile,
+        string Email
+    );
+    
+    public record Quit(Guid Id, string Country);
 
-public record UserQuit(Guid Id, string Country);
 
-
-public record UserChangedEmail(Guid Id, string Email);
+    public record ChangedEmail(Guid Id, string Email);
+}
 
 
 public class UserProjector
@@ -39,7 +42,7 @@ public class UserProjector
     public static string ProjectionName => "User";
     
     public static async Task Handle(
-        UserEnrolled enrolled, 
+        User.Enrolled enrolled, 
         UserContext context, 
         CancellationToken cancellationToken)
     {
@@ -63,19 +66,13 @@ public class UserProjector
         await context.SaveChangesAsync(cancellationToken);
     }
     
-    public void When(UserChangedEmail emailChanged, UserContext context, CancellationToken cancellationToken) =>
+    public void When(User.ChangedEmail emailChanged, UserContext context, CancellationToken cancellationToken) =>
         context
             .UsersProjections
             .Where(user => user.Id == emailChanged.Id)
             .ExecuteUpdate(calls => calls.SetProperty(projection => projection.ContactInformation.Email, emailChanged.Email));
     
-    public Task Consume(UserChangedEmail emailChanged, UserContext context, CancellationToken cancellationToken) =>
-        context
-            .UsersProjections
-            .Where(user => user.Id == emailChanged.Id)
-            .ExecuteUpdateAsync(calls => calls.SetProperty(projection => projection.ContactInformation.Email, emailChanged.Email));
-    
-    public async Task When(UserMoved moved, UserContext context, CancellationToken cancellationToken) =>
+    public async Task When(User.Moved moved, UserContext context, CancellationToken cancellationToken) =>
         await context
             .UsersProjections
             .Where(user => user.Id == moved.Id)
@@ -86,7 +83,7 @@ public class UserProjector
                 cancellationToken
             );
 
-    public async Task When(UserChangedContactInformation changedContactInformation, UserContext context, CancellationToken cancellationToken) =>
+    public async Task When(User.ChangedContactInformation changedContactInformation, UserContext context, CancellationToken cancellationToken) =>
         await context
             .UsersProjections
             .Where(user => user.Id == changedContactInformation.Id)
@@ -96,7 +93,7 @@ public class UserProjector
                 cancellationToken
             );
 
-    public async Task When(UserQuit userQuit, UserContext context, CancellationToken cancellationToken) =>
+    public async Task When(User.Quit userQuit, UserContext context, CancellationToken cancellationToken) =>
         await context
             .UsersProjections
             .Where(user => user.Id == userQuit.Id)

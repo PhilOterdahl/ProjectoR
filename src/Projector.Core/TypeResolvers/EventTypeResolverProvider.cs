@@ -4,15 +4,8 @@ using ProjectoR.Core.Projector;
 
 namespace ProjectoR.Core.TypeResolvers;
 
-public class EventTypeResolverProvider
+public class EventTypeResolverProvider(IServiceProvider serviceProvider)
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public EventTypeResolverProvider(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
     public IEventTypeResolver GetEventTypeResolver(
         EventTypeResolverType type,
         EventTypeResolverCasing casing,
@@ -21,6 +14,7 @@ public class EventTypeResolverProvider
         type switch
         {
             EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(casing, eventTypes),
+            EventTypeResolverType.ClassName => CreateClassNameEventTypeResolver(casing, eventTypes),
             EventTypeResolverType.Custom => GetCustomEventTypeResolver(customEventTypeResolverType)
         };
 
@@ -31,8 +25,15 @@ public class EventTypeResolverProvider
         return resolver;
     }
     
+    private ClassNameEventTypeResolver CreateClassNameEventTypeResolver(EventTypeResolverCasing casing, Type[] eventTypes)
+    {
+        var resolver = new ClassNameEventTypeResolver(GetEventNameFormatter(casing));
+        resolver.SetEventTypes(eventTypes);
+        return resolver;
+    }
+    
     private IEventTypeResolver GetCustomEventTypeResolver(Type customResolverType) =>
-        (IEventTypeResolver)_serviceProvider.GetRequiredService(customResolverType);
+        (IEventTypeResolver)serviceProvider.GetRequiredService(customResolverType);
 
     private IEventNameFormatter GetEventNameFormatter(EventTypeResolverCasing casing) =>
         casing switch

@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
+using Open.ChannelExtensions;
 using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.TypeResolvers;
 
@@ -13,7 +15,9 @@ public class ProjectorService<TProjector>
     private readonly ProjectorCheckpointCache<TProjector> _checkpointCache;
     private readonly ProjectorInfo _projectorInfo;
     private readonly IServiceProvider _serviceProvider;
-
+    private readonly Channel<EventData> _eventChannel;
+    private bool _stopping;
+    
     public Type[] EventTypes => _projectorInfo.EventTypes;
     public string[] EventNames { get; }
     public string ProjectionName { get; }
@@ -29,6 +33,15 @@ public class ProjectorService<TProjector>
             .Select(eventType => eventTypeResolver.GetName(eventType))
             .ToArray();
         ProjectionName = projectorInfo.ProjectionName;
+        _eventChannel = Channel.CreateBounded<EventData>(
+            new BoundedChannelOptions(_options.BatchSize*10)
+            {
+                SingleReader = true,
+                SingleWriter = true,
+                FullMode = BoundedChannelFullMode.Wait,
+                AllowSynchronousContinuations = false
+            }
+        );
     }
     
     public async Task Start(CancellationToken cancellationToken)
@@ -45,7 +58,22 @@ public class ProjectorService<TProjector>
             _checkpointCache.SetCheckpoint(checkpoint);
     }
 
-    public async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
+    public async Task EventAppeared(EventData eventData, CancellationToken cancellationToken)
+    { 
+        if (_stopping)
+            return;
+        
+        await _eventChannel.Writer.WriteAsync(eventData, cancellationToken);
+    }
+
+    public async Task UpdateProjections(CancellationToken cancellationToken) =>
+        await _eventChannel
+            .Reader
+            .Batch(_options.BatchSize, true)
+            .WithTimeout(_options.BatchTimeout.Milliseconds)
+            .TaskReadAllAsync(cancellationToken, async batch => await Project(batch, cancellationToken));
+
+    private async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {   
         await using var scope = _serviceProvider.CreateAsyncScope();
         var eventTypeResolver = GetEventTypeResolver(scope.ServiceProvider);
@@ -69,6 +97,12 @@ public class ProjectorService<TProjector>
             
             await SaveCheckpoint(checkpointRepository, position, cancellationToken);
         }
+    }
+    
+    public async Task Stop(CancellationToken cancellationToken)
+    {
+        _stopping = true;
+        await _eventChannel.CompleteAsync();
     }
 
     private static void Invoke(

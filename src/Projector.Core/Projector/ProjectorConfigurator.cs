@@ -13,13 +13,11 @@ public sealed class ProjectorConfigurator
         _services = services;
     }
     
-    public ProjectorConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure) where TProjector : class
+    public ProjectorConfigurator UseProjector<TProjector>(ProjectorOptions options) where TProjector : class
     {
-        var options = new ProjectorOptions();
         var projectorType = typeof(TProjector);
         var projectorInfo = new ProjectorInfo(projectorType);
         ProjectionName = projectorInfo.ProjectionName;
-        configure?.Invoke(options);
         
         _services
             .AddScoped<TProjector>()
