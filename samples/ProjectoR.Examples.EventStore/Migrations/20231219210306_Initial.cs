@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ProjectoR.Examples.EventStoreDB.Migrations
+namespace ProjectoR.Examples.EventStore.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

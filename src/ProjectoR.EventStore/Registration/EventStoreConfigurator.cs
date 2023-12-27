@@ -2,37 +2,37 @@ using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Subscription;
-using ProjectoR.EventStoreDB.Checkpointing;
-using ProjectoR.EventStoreDb.Subscription;
+using Projector.EventStore.Checkpointing;
+using Projector.EventStore.Subscription;
 
-namespace ProjectoR.EventStoreDb.Registration;
+namespace Projector.EventStore.Registration;
 
-public interface IEventStoreDbConfigurator
+public interface IEventStoreConfigurator
 {
-    IEventStoreDbConfigurator UseEventStoreDBCheckpointing();
+    IEventStoreConfigurator UseEventStoreCheckpointing();
 
-    IEventStoreDbConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
+    IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
 }
 
-public class EventStoreDbConfigurator : IEventStoreDbConfigurator
+public class EventStoreConfigurator : IEventStoreConfigurator
 {
     private readonly IServiceCollection _services;
 
-    public EventStoreDbConfigurator(IServiceCollection services, string connectionString)
+    public EventStoreConfigurator(IServiceCollection services, string connectionString)
     {
         _services = services;
         _services.AddEventStoreClient(connectionString);
     }
 
-    public IEventStoreDbConfigurator UseEventStoreDBCheckpointing()
+    public IEventStoreConfigurator UseEventStoreCheckpointing()
     {
         _services
-            .AddScoped<ICheckpointRepository, EventStoreDBCheckpointRepository>();
+            .AddScoped<ICheckpointRepository, EventStoreCheckpointRepository>();
         
         return this;
     }
     
-    public IEventStoreDbConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
+    public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
         var options = new ProjectorOptions();
         configure?.Invoke(options);

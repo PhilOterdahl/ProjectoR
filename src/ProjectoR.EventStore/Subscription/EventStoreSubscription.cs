@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Subscription;
 
-namespace ProjectoR.EventStoreDb.Subscription;
+namespace Projector.EventStore.Subscription;
 
 internal class EventStoreProjectionSubscription<TProjector>(
     EventStoreClient eventStoreClient,
@@ -13,11 +13,9 @@ internal class EventStoreProjectionSubscription<TProjector>(
 {
     private bool _stopping;
     private StreamSubscription _subscription;
+    private readonly ProjectorService<TProjector> _projectorService = projectorService;
 
-    public async Task Initialize(CancellationToken cancellationToken)
-    {
-        await projectorService.Start(cancellationToken);
-    }
+    public async Task Initialize(CancellationToken cancellationToken) => await projectorService.Start(cancellationToken);
 
     public async Task Subscribe(CancellationToken cancellationToken)
     {
@@ -42,12 +40,12 @@ internal class EventStoreProjectionSubscription<TProjector>(
     }
 
     public async Task UpdateProjections(CancellationToken cancellationToken) =>
-        await projectorService.UpdateProjections(cancellationToken);
+        await _projectorService.UpdateProjections(cancellationToken);
 
     public async Task Stop(CancellationToken cancellationToken)
     {
         _stopping = true;
-        await projectorService.Stop(cancellationToken);
+        await _projectorService.Stop(cancellationToken);
         _subscription.Dispose();
     }
 
@@ -112,7 +110,14 @@ internal class EventStoreProjectionSubscription<TProjector>(
     {
         if (_stopping)
             return;
-        
-        await projectorService.EventAppeared(new Core.EventData(resolvedEvent.Event.EventType, resolvedEvent.Event.Data.ToArray(), (long)resolvedEvent.Event.Position.CommitPosition), cancellationToken);
+
+        await _projectorService.EventAppeared(
+            new ProjectoR.Core.EventData(
+                resolvedEvent.Event.EventType,
+                resolvedEvent.Event.Data.ToArray(),
+                (long)resolvedEvent.Event.Position.CommitPosition
+            ),
+            cancellationToken
+        );
     }
 }

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjectoR.Examples.EventStoreDB.Data;
+using ProjectoR.Examples.EventStore.Data;
 
 #nullable disable
 
-namespace ProjectoR.Examples.EventStoreDB.Migrations
+namespace ProjectoR.Examples.EventStore.Migrations
 {
     [DbContext(typeof(UserContext))]
     partial class UserContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.EventStore.UserProjection", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -41,9 +41,9 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
                     b.ToTable("User", "Projection");
                 });
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStoreDB.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.EventStore.UserProjection", b =>
                 {
-                    b.OwnsOne("ProjectoR.Examples.EventStoreDB.Address", "Address", b1 =>
+                    b.OwnsOne("ProjectoR.Examples.EventStore.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");
@@ -68,7 +68,7 @@ namespace ProjectoR.Examples.EventStoreDB.Migrations
                                 .HasForeignKey("UserProjectionId");
                         });
 
-                    b.OwnsOne("ProjectoR.Examples.EventStoreDB.ContactInformation", "ContactInformation", b1 =>
+                    b.OwnsOne("ProjectoR.Examples.EventStore.ContactInformation", "ContactInformation", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");

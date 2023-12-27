@@ -1,4 +1,5 @@
 using System.Reflection;
+using ProjectoR.Core.Projector.Batching;
 
 namespace ProjectoR.Core.Projector;
 
@@ -6,10 +7,15 @@ public class ProjectorInfo
 {
     public Type[] EventTypes { get; private set; } 
     public string ProjectionName { get; private set; }
+    public BatchPreProcessorInfo? BatchPreProcessorInfo { get; private set; }
+    public BatchPostProcessorInfo? BatchPostProcessorInfo { get; private set; }
+    public bool HasBatchPreProcessor => BatchPreProcessorInfo is not null;
+    public bool HasBatchPostProcessor => BatchPostProcessorInfo is not null;
     
     private readonly Dictionary<Type, ProjectorHandlerInfo> _handlerInfo;
     
     private static readonly string[] ValidMethods = {
+        ProjectorHandlerInfo.Project,
         ProjectorHandlerInfo.Consume,
         ProjectorHandlerInfo.Consumes,
         ProjectorHandlerInfo.Handle,
@@ -20,19 +26,34 @@ public class ProjectorInfo
     public ProjectorInfo(Type projectorType)
     {
         _handlerInfo = GetProjectorHandlerInfo(projectorType);
+        BatchPreProcessorInfo = GetPreBatchProcessedBehaviourInfo(projectorType);
+        BatchPostProcessorInfo = GetPostBatchProcessedBehaviourInfo(projectorType);
         EventTypes = _handlerInfo
             .Keys
             .ToArray();
         ProjectionName = GetProjectionName(projectorType);
     }
-
+    
     public ProjectorHandlerInfo GetHandlerInfoForEventType(Type eventType) => _handlerInfo[eventType];
+    
+    private static BatchPreProcessorInfo? GetPreBatchProcessedBehaviourInfo(Type projectorType) =>
+        projectorType
+            .GetMethods()
+            .Where(info => BatchPreProcessorInfo.ValidMethods.Contains(info.Name))
+            .Select(info => new BatchPreProcessorInfo(projectorType, info))
+            .SingleOrDefault();
+
+    private static BatchPostProcessorInfo? GetPostBatchProcessedBehaviourInfo(Type projectorType) =>
+        projectorType
+            .GetMethods()
+            .Where(info => BatchPostProcessorInfo.ValidMethods.Contains( info.Name))
+            .Select(info => new BatchPostProcessorInfo(projectorType, info))
+            .SingleOrDefault();
 
     private static Dictionary<Type, ProjectorHandlerInfo> GetProjectorHandlerInfo(Type projectorType)
     {
         var methods = projectorType.GetMethods();
-        var handlerInfo = projectorType
-            .GetMethods()
+        var handlerInfo = methods
             .Where(method => ValidMethods.Contains(method.Name))
             .Select(method =>
             {
@@ -80,6 +101,7 @@ public class ProjectorInfo
 
 public class ProjectorHandlerInfo
 {
+    public const string Project = "Project";
     public const string Consume = "Consume";
     public const string Consumes = "Consumes";
     public const string Handle = "Handle";

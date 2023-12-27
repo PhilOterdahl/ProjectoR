@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core.EventNameFormatters;
 using ProjectoR.Core.Projector;
+using ProjectoR.Core.Projector.Serialization;
 
 namespace ProjectoR.Core.TypeResolvers;
 

@@ -4,8 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>Projector.EventStoreDB</AssemblyName>
-        <RootNamespace>Projector.EventStoreDB</RootNamespace>
+        <AssemblyName>Projector.EventStore</AssemblyName>
+        <RootNamespace>Projector.EventStore</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

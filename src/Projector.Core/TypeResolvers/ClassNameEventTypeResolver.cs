@@ -13,7 +13,10 @@ public class ClassNameEventTypeResolver(IEventNameFormatter formatter) : IEventT
 
     public Type GetType(string eventName)
     {
-        throw new NotImplementedException();
+        var name = formatter.Format(eventName);
+        return _eventTypes.TryGetValue(name, out var type)
+            ? type
+            : throw new InvalidOperationException($"Type for event with name: {name} was not found");
     }
 
     public string GetName(Type eventType)

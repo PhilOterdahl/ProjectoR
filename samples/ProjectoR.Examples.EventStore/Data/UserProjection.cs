@@ -1,4 +1,4 @@
-namespace ProjectoR.Examples.EventStoreDB;
+namespace ProjectoR.Examples.EventStore.Data;
 
 public class UserProjection
 {

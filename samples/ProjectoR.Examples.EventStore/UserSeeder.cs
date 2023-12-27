@@ -6,7 +6,7 @@ using ProjectoR.Core.EventNameFormatters;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.TypeResolvers;
 
-namespace ProjectoR.Examples.EventStoreDB;
+namespace ProjectoR.Examples.EventStore;
 
 public class UserSeeder : BackgroundService
 {
@@ -83,9 +83,9 @@ public class UserSeeder : BackgroundService
         var options = provider.GetRequiredKeyedService<ProjectorOptions>("User");
         var eventTypeResolver = provider.GetRequiredService<EventTypeResolverProvider>()
             .GetEventTypeResolver(
-                options.EventTypeResolver,
-                options.Casing,
-                options.CustomEventTypeResolverType,
+                options.SerializationOptions.EventTypeResolver,
+                options.SerializationOptions.Casing,
+                options.SerializationOptions.CustomEventTypeResolverType,
                 events.Select(@event => @event.GetType()).Distinct().ToArray()
             );
         

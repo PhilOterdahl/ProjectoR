@@ -1,9 +1,10 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Open.ChannelExtensions;
 using ProjectoR.Core.Checkpointing;
+using ProjectoR.Core.Projector.Batching;
+using ProjectoR.Core.Projector.Checkpointing;
 using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
@@ -17,6 +18,7 @@ public class ProjectorService<TProjector>
     private readonly IServiceProvider _serviceProvider;
     private readonly Channel<EventData> _eventChannel;
     private bool _stopping;
+    private int _eventsProcessedSinceCheckpoint;
     
     public Type[] EventTypes => _projectorInfo.EventTypes;
     public string[] EventNames { get; }
@@ -34,7 +36,7 @@ public class ProjectorService<TProjector>
             .ToArray();
         ProjectionName = projectorInfo.ProjectionName;
         _eventChannel = Channel.CreateBounded<EventData>(
-            new BoundedChannelOptions(_options.BatchSize*10)
+            new BoundedChannelOptions(_options.BatchingOptions.BatchSize*10)
             {
                 SingleReader = true,
                 SingleWriter = true,
@@ -69,62 +71,95 @@ public class ProjectorService<TProjector>
     public async Task UpdateProjections(CancellationToken cancellationToken) =>
         await _eventChannel
             .Reader
-            .Batch(_options.BatchSize, true)
-            .WithTimeout(_options.BatchTimeout.Milliseconds)
+            .Batch(_options.BatchingOptions.BatchSize, true)
+            .WithTimeout(_options.BatchingOptions.BatchTimeout.Milliseconds)
             .TaskReadAllAsync(cancellationToken, async batch => await Project(batch, cancellationToken));
 
     private async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
-    {   
+    {
+        var checkpointingOptions = _options.CheckpointingOptions;
         await using var scope = _serviceProvider.CreateAsyncScope();
         var eventTypeResolver = GetEventTypeResolver(scope.ServiceProvider);
-        var projector = scope.ServiceProvider.GetRequiredService<TProjector>();
+        var projectorMethodInvoker = scope.ServiceProvider.GetRequiredService<ProjectorMethodInvoker<TProjector>>();
         var checkpointRepository = scope.ServiceProvider.GetRequiredService<ICheckpointRepository>();
-        
+        var batchPreProcessor = scope.ServiceProvider.GetService<BatchPreProcessor<TProjector>>();
+        var batchPostProcessor = scope.ServiceProvider.GetService<BatchPostProcessor<TProjector>>();
         var events = eventData
             .Select(@event => new { @event.Data, type = eventTypeResolver.GetType(@event.EventName), @event.Position })
             .Select(eventData => (JsonSerializer.Deserialize(eventData.Data, eventData.type), eventData.type, eventData.Position));
+
+        IDisposable? dependencies = null;
+        IAsyncDisposable? asyncDependencies = null;
+        if (batchPreProcessor is not null)
+        {
+            var result = await batchPreProcessor.Invoke(cancellationToken);
+            dependencies = result.Dependencies;
+            asyncDependencies = result.AsyncDependencies;
+        }
+        
+        long lastEventPosition = 0;
+
+        if (dependencies is not null)
+            using (dependencies)
+            {
+                await Process();
+            }
+        else if (asyncDependencies is not null)
+            await using (asyncDependencies)
+            { 
+                await Process();
+            }
+        else
+            await Process();
+        
+        async Task Process()
+        {
+            await ProjectEvents(
+                events, 
+                projectorMethodInvoker,
+                checkpointingOptions, 
+                checkpointRepository, 
+                cancellationToken
+            );
+        
+            if (batchPostProcessor is not null)
+                await batchPostProcessor.Invoke(cancellationToken);
+        
+            if (checkpointingOptions.Strategy == CheckpointingStrategy.AfterBatch)
+                await SaveCheckpoint(checkpointRepository, lastEventPosition, cancellationToken);
+        }
+    }
+
+    private async Task ProjectEvents(
+        IEnumerable<(object?, Type type, long Position)> events,
+        ProjectorMethodInvoker<TProjector> projectorMethodInvoker,
+        ProjectorCheckpointingOptions checkpointingOptions, 
+        ICheckpointRepository checkpointRepository,
+        CancellationToken cancellationToken)
+    {
+        long lastEventPosition;
         
         foreach (var (@event, eventType, position) in events)
         {
-            var handlerInfo = _projectorInfo.GetHandlerInfoForEventType(eventType);
-            var method = handlerInfo.MethodInfo;
-            var parameters = GenerateParameters(@event, method, cancellationToken);
-
-            if (handlerInfo.IsAsync)
-                await InvokeMethodAsync(method, projector, parameters);
-            else
-                Invoke(method, projector, parameters);
+            lastEventPosition = position;
+            await projectorMethodInvoker.Invoke(@event, eventType, cancellationToken);
             
-            await SaveCheckpoint(checkpointRepository, position, cancellationToken);
+            _eventsProcessedSinceCheckpoint++;
+            
+            switch (checkpointingOptions.Strategy)
+            {
+                case CheckpointingStrategy.EveryEvent:
+                case CheckpointingStrategy.Interval when _eventsProcessedSinceCheckpoint % checkpointingOptions.CheckPointingInterval == 0:
+                    await SaveCheckpoint(checkpointRepository, position, cancellationToken);
+                    break;
+            }
         }
     }
-    
+
     public async Task Stop(CancellationToken cancellationToken)
     {
         _stopping = true;
         await _eventChannel.CompleteAsync();
-    }
-
-    private static void Invoke(
-        MethodInfo method, 
-        TProjector projector,
-        object[] parameters)
-    {
-        if (method.IsStatic)
-            method.Invoke(null, parameters);
-        else
-            method.Invoke(projector, parameters);
-    }
-
-    private static async Task InvokeMethodAsync(
-        MethodInfo method, 
-        TProjector projector, 
-        object[] parameters)
-    {
-        if (method.IsStatic)
-            await method.InvokeAsync(null, parameters);
-        else
-            await method.InvokeAsync(projector, parameters);
     }
 
     private async Task SaveCheckpoint(
@@ -137,39 +172,16 @@ public class ProjectorService<TProjector>
             .MakeCheckpoint(newCheckpoint, cancellationToken)
             .ConfigureAwait(false);
         _checkpointCache.SetCheckpoint(newCheckpoint);
+        _eventsProcessedSinceCheckpoint = 0;
     }
     
     private IEventTypeResolver GetEventTypeResolver(IServiceProvider serviceProvider) =>
         serviceProvider
             .GetRequiredService<EventTypeResolverProvider>()
             .GetEventTypeResolver(
-                _options.EventTypeResolver,
-                _options.Casing,
-                _options.CustomEventTypeResolverType,
+                _options.SerializationOptions.EventTypeResolver,
+                _options.SerializationOptions.Casing,
+                _options.SerializationOptions.CustomEventTypeResolverType,
                 EventTypes
             );
-
-    private object[] GenerateParameters(
-        object @event,
-        MethodInfo method,
-        CancellationToken cancellationToken)
-    {
-        var parametersNeeded = method.GetParameters();
-        var parameters = new object[parametersNeeded.Length];
-
-        foreach (var parameterInfo in parametersNeeded)
-        {
-            if (parameterInfo.ParameterType == @event.GetType())
-                parameters[parameterInfo.Position] = @event;
-            else if (parameterInfo.ParameterType == typeof(CancellationToken))
-                parameters[parameterInfo.Position] = cancellationToken;
-            else
-            {
-                var parameter = _serviceProvider.GetRequiredService(parameterInfo.ParameterType);
-                parameters[parameterInfo.Position] = parameter;
-            }
-        }
-
-        return parameters;
-    }
 }

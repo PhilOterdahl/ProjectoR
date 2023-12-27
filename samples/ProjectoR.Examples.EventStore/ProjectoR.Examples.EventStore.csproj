@@ -5,12 +5,11 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>ProjectoR.Examples.EventStoreDB</AssemblyName>
-        <RootNamespace>ProjectoR.Examples.EventStoreDB</RootNamespace>
+        <PackageId>ProjectoR.Examples.EventStore</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Projector.EventStoreDB\Projector.EventStoreDB.csproj" />
+      <ProjectReference Include="..\..\src\ProjectoR.EventStore\ProjectoR.EventStore.csproj" />
     </ItemGroup>
 
     <ItemGroup>

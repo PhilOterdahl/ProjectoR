@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace ProjectoR.Examples.EventStoreDB.Data;
+namespace ProjectoR.Examples.EventStore.Data;
 
 public class UserContext : DbContext
 {

@@ -3,9 +3,9 @@ using EventStore.Client;
 using Humanizer;
 using ProjectoR.Core.Checkpointing;
 
-namespace ProjectoR.EventStoreDB.Checkpointing;
+namespace Projector.EventStore.Checkpointing;
 
-internal class EventStoreDBCheckpointRepository(EventStoreClient eventStoreClient) : ICheckpointRepository
+internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient) : ICheckpointRepository
 {
     public async Task<Checkpoint?> TryLoad(string projectionName, CancellationToken cancellationToken = default)
     {

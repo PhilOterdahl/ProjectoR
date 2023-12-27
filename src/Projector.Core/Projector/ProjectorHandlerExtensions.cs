@@ -16,9 +16,18 @@ public static class ProjectorHandlerExtensions
         returnType.IsGenericType &&
         returnType.GetGenericTypeDefinition() == typeof(Task<>);
     
-    public static async Task InvokeAsync(this MethodInfo method, object obj, params object[] parameters)
+    public static async ValueTask InvokeAsync(this MethodInfo method, object obj, params object[] parameters)
     {
         dynamic awaitable = method.Invoke(obj, parameters);
         await awaitable;
+    }
+    
+    public static async ValueTask<object?> InvokeWithResultAsync(this MethodInfo method, object obj, params object[] parameters)
+    {
+        dynamic awaitable = method.Invoke(obj, parameters);
+        await awaitable;
+        var awaiter = awaitable.GetAwaiter();
+        var result = awaiter.GetResult();
+        return result ?? null;
     }
 }
