@@ -114,7 +114,7 @@ public class ProjectorService<TProjector>
         
         async Task Process()
         {
-            await ProjectEvents(
+            lastEventPosition =await ProjectEvents(
                 events, 
                 projectorMethodInvoker,
                 checkpointingOptions, 
@@ -130,14 +130,14 @@ public class ProjectorService<TProjector>
         }
     }
 
-    private async Task ProjectEvents(
+    private async Task<long> ProjectEvents(
         IEnumerable<(object?, Type type, long Position)> events,
         ProjectorMethodInvoker<TProjector> projectorMethodInvoker,
         ProjectorCheckpointingOptions checkpointingOptions, 
         ICheckpointRepository checkpointRepository,
         CancellationToken cancellationToken)
     {
-        long lastEventPosition;
+        long lastEventPosition = 0;
         
         foreach (var (@event, eventType, position) in events)
         {
@@ -154,6 +154,8 @@ public class ProjectorService<TProjector>
                     break;
             }
         }
+
+        return lastEventPosition;
     }
 
     public async Task Stop(CancellationToken cancellationToken)

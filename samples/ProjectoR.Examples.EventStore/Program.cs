@@ -19,16 +19,17 @@ builder
     .AddProjectoR(configurator =>
     {
         configurator
-            .UseInMemory(inMemoryConfigurator => inMemoryConfigurator.UseInMemoryCheckpointing())
             .UseEventStore(
                 builder.Configuration.GetConnectionString("EventStoreDB"),
                 eventStoreConfigurator =>
                 {
                     eventStoreConfigurator
+                        .UseEventStoreCheckpointing()
                         .UseProjector<UserProjector>(configure =>
                         {
                             configure.BatchingOptions.BatchSize = 1000;
                             configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(500);
+                            configure.CheckpointingOptions.CheckpointAfterBatch();
                             configure
                                 .SerializationOptions
                                 .UseClassNameEventTypeResolver()
