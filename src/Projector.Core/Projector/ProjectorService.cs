@@ -12,15 +12,15 @@ namespace ProjectoR.Core.Projector;
 internal sealed class ProjectorService<TProjector>
 {
     private readonly ProjectorOptions _options;
-    public long? Position => _checkpointCache.Checkpoint?.Position;
     private readonly ProjectorCheckpointCache _checkpointCache;
     private readonly ProjectorInfo _projectorInfo;
     private readonly IServiceProvider _serviceProvider;
     private readonly Channel<EventData> _eventChannel;
     private bool _stopping;
     private int _eventsProcessedSinceCheckpoint;
+    private Type[] EventTypes => _projectorInfo.EventTypes;
     
-    public Type[] EventTypes => _projectorInfo.EventTypes;
+    public long? Position => _checkpointCache.Checkpoint?.Position;
     public string[] EventNames { get; }
     public string ProjectionName { get; }
     
@@ -84,13 +84,9 @@ internal sealed class ProjectorService<TProjector>
 
     private async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {
-        var checkpointingOptions = _options.CheckpointingOptions;
         await using var scope = _serviceProvider.CreateAsyncScope();
         var eventTypeResolver = GetEventTypeResolver(scope.ServiceProvider);
-        var projectorMethodInvoker = scope.ServiceProvider.GetRequiredService<ProjectorMethodInvoker<TProjector>>();
-        var checkpointRepository = scope.ServiceProvider.GetRequiredService<ICheckpointRepository>();
         var batchPreProcessor = scope.ServiceProvider.GetService<BatchPreProcessor<TProjector>>();
-        var batchPostProcessor = scope.ServiceProvider.GetService<BatchPostProcessor<TProjector>>();
         var events = eventData
             .Select(@event => new { @event.Data, type = eventTypeResolver.GetType(@event.EventName), @event.Position })
             .Select(eventData => (JsonSerializer.Deserialize(eventData.Data, eventData.type), eventData.type, eventData.Position));
@@ -100,16 +96,19 @@ internal sealed class ProjectorService<TProjector>
             dependency = await batchPreProcessor
                 .Invoke(cancellationToken)
                 .ConfigureAwait(false);
-        
-        long lastEventPosition = 0;
-        
+
         switch (dependency)
         {
             case IAsyncDisposable asyncDisposable:
             {
                 await using (asyncDisposable)
                 {
-                    await Process()
+                    await Project(
+                            scope.ServiceProvider,
+                            dependency,
+                            events,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                     return;
                 }
@@ -118,22 +117,39 @@ internal sealed class ProjectorService<TProjector>
             {
                 using (disposable)
                 {
-                    await Process()
+                    await Project(
+                            scope.ServiceProvider,
+                            dependency,
+                            events,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                     return;
                 }
             }
-            case null:
-            {
-                await Process()
+            default:
+                await Project(
+                        scope.ServiceProvider,
+                        dependency,
+                        events,
+                        cancellationToken
+                    )
                     .ConfigureAwait(false);
                 return;
-            }
         }
-
-        async Task Process()
-        {
-            lastEventPosition = await ProjectEvents(
+    }
+    
+    private async Task Project(
+        IServiceProvider provider,
+        object? dependency, 
+        IEnumerable<(object, Type, long)> events,
+        CancellationToken cancellationToken)
+    {
+        var checkpointingOptions = _options.CheckpointingOptions;
+        var projectorMethodInvoker = provider.GetRequiredService<ProjectorMethodInvoker<TProjector>>();
+        var batchPostProcessor = provider.GetService<BatchPostProcessor<TProjector>>();
+        var checkpointRepository = provider.GetRequiredService<ICheckpointRepository>();
+        var lastEventPosition = await ProjectEvents(
                 dependency,
                 events, 
                 projectorMethodInvoker,
@@ -143,15 +159,14 @@ internal sealed class ProjectorService<TProjector>
             )
             .ConfigureAwait(false);
         
-            if (checkpointingOptions.Strategy == CheckpointingStrategy.AfterBatch)
-                await SaveCheckpoint(checkpointRepository, lastEventPosition, cancellationToken)
-                    .ConfigureAwait(false);
+        if (checkpointingOptions.Strategy == CheckpointingStrategy.AfterBatch)
+            await SaveCheckpoint(checkpointRepository, lastEventPosition, cancellationToken)
+                .ConfigureAwait(false);
             
-            if (batchPostProcessor is not null)
-                await batchPostProcessor
-                    .Invoke(dependency, cancellationToken)
-                    .ConfigureAwait(false);
-        }
+        if (batchPostProcessor is not null)
+            await batchPostProcessor
+                .Invoke(dependency, cancellationToken)
+                .ConfigureAwait(false);
     }
 
     private async Task<long> ProjectEvents(
@@ -179,6 +194,8 @@ internal sealed class ProjectorService<TProjector>
                 case CheckpointingStrategy.Interval when _eventsProcessedSinceCheckpoint % checkpointingOptions.CheckPointingInterval == 0:
                     await SaveCheckpoint(checkpointRepository, position, cancellationToken)
                         .ConfigureAwait(false);
+                    break;
+                case CheckpointingStrategy.AfterBatch:
                     break;
             }
         }

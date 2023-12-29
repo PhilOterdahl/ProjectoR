@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.EventSto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EntityFrameworkCore", "ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj", "{20E07159-E79F-4601-A14C-45CD2875ED3F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{053DC9BE-DE19-4C88-8F29-9B06F5668B19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
