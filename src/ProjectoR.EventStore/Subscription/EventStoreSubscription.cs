@@ -30,22 +30,30 @@ internal class EventStoreProjectionSubscription<TProjector>(
             ? FromAll.Start
             : FromAll.After(new Position((ulong)subscribePosition.Value, (ulong)subscribePosition.Value));
 
-        _subscription = await eventStoreClient.SubscribeToAllAsync(
-            position,
-            EventAppeared,
-            false,
-            (_, reason, exception) => SubscriptionDropped(reason, projectorService.ProjectionName, exception, cancellationToken),
-            filter,
-            cancellationToken: cancellationToken);
+        _subscription = await eventStoreClient
+            .SubscribeToAllAsync(
+                position,
+                EventAppeared,
+                false,
+                (_, reason, exception) =>
+                    SubscriptionDropped(reason, projectorService.ProjectionName, exception, cancellationToken),
+                filter,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task UpdateProjections(CancellationToken cancellationToken) =>
-        await _projectorService.UpdateProjections(cancellationToken);
+        await _projectorService
+            .UpdateProjections(cancellationToken)
+            .ConfigureAwait(false);
 
     public async Task Stop(CancellationToken cancellationToken)
     {
         _stopping = true;
-        await _projectorService.Stop(cancellationToken);
+        await _projectorService
+            .Stop(cancellationToken)
+            .ConfigureAwait(false);
         _subscription.Dispose();
     }
 
@@ -111,13 +119,15 @@ internal class EventStoreProjectionSubscription<TProjector>(
         if (_stopping)
             return;
 
-        await _projectorService.EventAppeared(
-            new ProjectoR.Core.EventData(
-                resolvedEvent.Event.EventType,
-                resolvedEvent.Event.Data.ToArray(),
-                (long)resolvedEvent.Event.Position.CommitPosition
-            ),
-            cancellationToken
-        );
+        await _projectorService
+            .EventAppeared(
+                new ProjectoR.Core.EventData(
+                    resolvedEvent.Event.EventType,
+                    resolvedEvent.Event.Data.ToArray(),
+                    (long)resolvedEvent.Event.Position.CommitPosition
+                ),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 }

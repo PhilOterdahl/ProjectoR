@@ -29,7 +29,7 @@ public class Checkpoint
        };
     }
 
-    private Checkpoint(CheckpointState state)
+    public Checkpoint(CheckpointState state)
     {
         _state = state;
     }

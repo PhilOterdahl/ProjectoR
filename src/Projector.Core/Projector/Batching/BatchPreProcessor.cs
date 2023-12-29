@@ -5,9 +5,7 @@ namespace ProjectoR.Core.Projector.Batching;
 
 public class BatchPreProcessor<TProjector>(BatchPreProcessorInfo handlerInfo, IServiceProvider serviceProvider)
 {
-    public record InvocationResponse(IDisposable? Dependencies  = null, IAsyncDisposable? AsyncDependencies = null);
-    
-    public async ValueTask<InvocationResponse> Invoke(CancellationToken cancellationToken)
+    public async ValueTask<object?> Invoke(CancellationToken cancellationToken)
     {
         var projector = serviceProvider.GetRequiredService<TProjector>();
         var method = handlerInfo.MethodInfo;
@@ -15,49 +13,29 @@ public class BatchPreProcessor<TProjector>(BatchPreProcessorInfo handlerInfo, IS
 
         return handlerInfo.IsAsync
             ? await InvokeMethodAsync(method, projector, parameters)
-            : Invoke(method, projector, parameters);
+                .ConfigureAwait(false)
+            : BatchPreProcessor<TProjector>.Invoke(method, projector, parameters);
     }
 
-    private InvocationResponse Invoke(
+    private static object? Invoke(
         MethodInfo method, 
         TProjector projector,
-        object[] parameters)
-    {
-        var result = method.IsStatic
+        object[] parameters) =>
+        method.IsStatic
             ? method.Invoke(null, parameters)
             : method.Invoke(projector, parameters);
-        
-        return MapToInvocationResponse(result);
-    }
-    
-    private async Task<InvocationResponse> InvokeMethodAsync(
+
+    private static async Task<object?> InvokeMethodAsync(
         MethodInfo method, 
         TProjector projector, 
-        object[] parameters)
-    {
-        var result = method.IsStatic
-            ? await method.InvokeWithResultAsync(null, parameters)
-            : await method.InvokeWithResultAsync(projector, parameters);
-
-        return handlerInfo.ReturnType switch
-        {
-            BatchPreProcessorInfo.InvocationReturnType.Disposable => new InvocationResponse(
-                (IDisposable?)result),
-            BatchPreProcessorInfo.InvocationReturnType.AsyncDisposable => new InvocationResponse(
-                AsyncDependencies: (IAsyncDisposable?)result),
-            _ => new InvocationResponse()
-        };
-    }
-    
-    private InvocationResponse MapToInvocationResponse(object? result) =>
-        handlerInfo.ReturnType switch
-        {
-            BatchPreProcessorInfo.InvocationReturnType.Disposable => new InvocationResponse(
-                (IDisposable?)result),
-            BatchPreProcessorInfo.InvocationReturnType.AsyncDisposable => new InvocationResponse(
-                AsyncDependencies: (IAsyncDisposable?)result),
-            _ => new InvocationResponse()
-        };
+        object[] parameters) =>
+        method.IsStatic
+            ? await method
+                .InvokeWithResultAsync(null, parameters)
+                .ConfigureAwait(false)
+            : await method
+                .InvokeWithResultAsync(projector, parameters)
+                .ConfigureAwait(false);
 
     private object[] GenerateParameters(
         MethodInfo method,

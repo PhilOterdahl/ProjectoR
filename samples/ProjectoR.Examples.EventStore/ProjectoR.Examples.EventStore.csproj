@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj" />
       <ProjectReference Include="..\..\src\ProjectoR.EventStore\ProjectoR.EventStore.csproj" />
     </ItemGroup>
 

@@ -14,7 +14,7 @@ public interface IEventStoreConfigurator
     IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
 }
 
-public class EventStoreConfigurator : IEventStoreConfigurator
+internal class EventStoreConfigurator : IEventStoreConfigurator
 {
     private readonly IServiceCollection _services;
 

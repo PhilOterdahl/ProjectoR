@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{877A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.EventStore", "..\samples\ProjectoR.Examples.EventStore\ProjectoR.Examples.EventStore.csproj", "{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EntityFrameworkCore", "ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj", "{20E07159-E79F-4601-A14C-45CD2875ED3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E07159-E79F-4601-A14C-45CD2875ED3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E07159-E79F-4601-A14C-45CD2875ED3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E07159-E79F-4601-A14C-45CD2875ED3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E07159-E79F-4601-A14C-45CD2875ED3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB} = {877A07AC-BF0D-4A0F-A919-679BF850BAD5}

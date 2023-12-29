@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ProjectoR.Examples.EventStore.Data;
 
 namespace ProjectoR.Examples.EventStore;
@@ -39,21 +40,23 @@ public class UserProjector
 {
     public static string ProjectionName => "User";
     
-    public static async Task<IAsyncDisposable> PreProcess(
+    public static async Task<IDbContextTransaction> PreProcess(
         UserContext context,
         CancellationToken cancellationToken) =>
         await context.Database.BeginTransactionAsync(cancellationToken);
 
     public static async Task PostProcess(
         UserContext context,
+        IDbContextTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var test = await context.SaveChangesAsync(cancellationToken);
-        await context.Database.CurrentTransaction.CommitAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public static void Project(
         User.Enrolled enrolled, 
+        IDbContextTransaction transaction,
         UserContext context)
     {
         context.UsersProjections.Add(new UserProjection

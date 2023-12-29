@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProjectoR.Core.Registration;
+using ProjectoR.EntityFrameworkCore.Registration;
 using Projector.EventStore.Registration;
 using ProjectoR.Examples.EventStore;
 using ProjectoR.Examples.EventStore.Data;
@@ -24,7 +25,6 @@ builder
                 eventStoreConfigurator =>
                 {
                     eventStoreConfigurator
-                        .UseEventStoreCheckpointing()
                         .UseProjector<UserProjector>(configure =>
                         {
                             configure.BatchingOptions.BatchSize = 1000;
@@ -36,6 +36,9 @@ builder
                                 .UseSnakeCaseEventNaming();
                         });
                 }
+            )
+            .UseEntityFramework(frameworkConfigurator =>
+                frameworkConfigurator.UseEntityFrameworkCheckpointing<UserContext>()
             );
     })
     .AddHostedService<UserSeeder>();
