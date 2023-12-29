@@ -4,7 +4,7 @@ using ProjectoR.Core.Projector.Serialization;
 
 namespace ProjectoR.Core.Projector;
 
-public class ProjectorOptions
+public sealed class ProjectorOptions
 {
     public ProjectorSerializationOptions SerializationOptions { get; } = new();
     public ProjectorCheckpointingOptions CheckpointingOptions { get; } = new();

@@ -22,10 +22,10 @@ public sealed class ProjectorConfigurator
         ProjectionName = projectorInfo.ProjectionName;
         
         _services
+            .AddKeyedSingleton<ProjectorCheckpointCache>(projectorInfo.ProjectionName)
+            .AddKeyedSingleton(projectorInfo.ProjectionName, options)
             .AddScoped<TProjector>()
             .AddScoped<ProjectorMethodInvoker<TProjector>>(provider => new ProjectorMethodInvoker<TProjector>(projectorInfo, provider))
-            .AddSingleton<ProjectorCheckpointCache<TProjector>>()
-            .AddKeyedSingleton(projectorInfo.ProjectionName, options)
             .AddSingleton<ProjectorService<TProjector>>(serviceProvider => new ProjectorService<TProjector>(serviceProvider, projectorInfo));
 
         if (projectorInfo.HasBatchPreProcessor)

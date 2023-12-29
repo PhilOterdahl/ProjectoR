@@ -3,7 +3,7 @@ using ProjectoR.Core.Projector.Batching;
 
 namespace ProjectoR.Core.Projector;
 
-public class ProjectorInfo
+internal sealed class ProjectorInfo
 {
     public Type[] EventTypes { get; private set; } 
     public string ProjectionName { get; private set; }

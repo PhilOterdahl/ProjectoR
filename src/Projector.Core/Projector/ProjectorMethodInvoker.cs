@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProjectoR.Core.Projector;
 
-public class ProjectorMethodInvoker<TProjector>(ProjectorInfo projectorInfo, IServiceProvider serviceProvider)
+internal sealed class ProjectorMethodInvoker<TProjector>(ProjectorInfo projectorInfo, IServiceProvider serviceProvider)
 {
     public async ValueTask Invoke(
         object @event, 

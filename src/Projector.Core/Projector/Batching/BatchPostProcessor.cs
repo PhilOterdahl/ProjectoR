@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProjectoR.Core.Projector.Batching;
 
-public class BatchPostProcessor<TProjector>(BatchPostProcessorInfo handlerInfo, IServiceProvider serviceProvider)
+internal sealed class BatchPostProcessor<TProjector>(BatchPostProcessorInfo handlerInfo, IServiceProvider serviceProvider)
 {
     public async ValueTask Invoke(object? dependency, CancellationToken cancellationToken)
     {

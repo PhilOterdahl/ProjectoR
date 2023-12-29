@@ -7,7 +7,7 @@ public enum CheckpointingStrategy
     AfterBatch
 }
 
-public class ProjectorCheckpointingOptions
+public sealed class ProjectorCheckpointingOptions
 {
     public CheckpointingStrategy Strategy { get; private set; } = CheckpointingStrategy.EveryEvent;
     public int CheckPointingInterval { get; private set; }

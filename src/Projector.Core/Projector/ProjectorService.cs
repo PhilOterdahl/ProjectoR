@@ -9,11 +9,11 @@ using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
 
-public class ProjectorService<TProjector>
+internal sealed class ProjectorService<TProjector>
 {
     private readonly ProjectorOptions _options;
     public long? Position => _checkpointCache.Checkpoint?.Position;
-    private readonly ProjectorCheckpointCache<TProjector> _checkpointCache;
+    private readonly ProjectorCheckpointCache _checkpointCache;
     private readonly ProjectorInfo _projectorInfo;
     private readonly IServiceProvider _serviceProvider;
     private readonly Channel<EventData> _eventChannel;
@@ -28,7 +28,7 @@ public class ProjectorService<TProjector>
     {
         _serviceProvider = serviceProvider;
         _options = serviceProvider.GetRequiredKeyedService<ProjectorOptions>(projectorInfo.ProjectionName);
-        _checkpointCache = serviceProvider.GetRequiredService<ProjectorCheckpointCache<TProjector>>();
+        _checkpointCache = serviceProvider.GetRequiredKeyedService<ProjectorCheckpointCache>(projectorInfo.ProjectionName);
         _projectorInfo = projectorInfo;
         var eventTypeResolver = GetEventTypeResolver(serviceProvider);
         EventNames = EventTypes

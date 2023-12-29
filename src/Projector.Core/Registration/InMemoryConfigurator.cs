@@ -3,7 +3,7 @@ using ProjectoR.Core.Checkpointing;
 
 namespace ProjectoR.Core.Registration;
 
-public class InMemoryConfigurator(IServiceCollection services) : IInMemoryConfigurator
+internal class InMemoryConfigurator(IServiceCollection services) : IInMemoryConfigurator
 {
     public IInMemoryConfigurator UseInMemoryCheckpointing()
     {

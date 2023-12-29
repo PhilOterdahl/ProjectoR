@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace ProjectoR.Core.Projector.Batching;
 
-public class BatchPreProcessorInfo(Type handlerType, MethodInfo methodInfo)
+internal sealed class BatchPreProcessorInfo(Type handlerType, MethodInfo methodInfo)
 {
     public const string BatchProcessingStarting = "BatchProcessingStarting";
     public const string PreProcess = "PreProcess";

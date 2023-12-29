@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace ProjectoR.Core.Projector.Batching;
 
-public class BatchPostProcessorInfo
+internal sealed class BatchPostProcessorInfo
 {
     public const string BatchProcessingCompleted = "BatchProcessingCompleted";
     public const string PostProcess = "PostProcess";

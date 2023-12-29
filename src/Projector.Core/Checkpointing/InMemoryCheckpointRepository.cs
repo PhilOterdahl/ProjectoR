@@ -8,9 +8,7 @@ public class InMemoryCheckpointRepository : ICheckpointRepository
 
     public Task<Checkpoint?> TryLoad(string projectionName, CancellationToken cancellationToken = default)
     {
-        var result =_checkpoints.TryGetValue(projectionName, out var checkpoint)
-            ? checkpoint
-            : null;
+        var result = _checkpoints.GetValueOrDefault(projectionName);
         
         return Task.FromResult(result);
     }

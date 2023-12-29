@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace ProjectoR.Core.Projector;
 
-public static class ProjectorHandlerExtensions
+internal static class ProjectorHandlerExtensions
 {
     public static bool IsAwaitable(this Type returnType) => returnType.IsValueTask() || returnType.IsTask();
     

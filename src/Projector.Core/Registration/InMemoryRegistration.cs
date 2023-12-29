@@ -4,7 +4,7 @@ public static class InMemoryRegistration
 {
     public static ProjectoRConfigurator UseInMemory(
         this ProjectoRConfigurator configurator,
-        Action<InMemoryConfigurator> configure)
+        Action<IInMemoryConfigurator> configure)
     {
         var inMemoryConfigurator = new InMemoryConfigurator(configurator.Services);
         configure(inMemoryConfigurator);

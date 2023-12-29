@@ -4,10 +4,8 @@ namespace ProjectoR.Core.EventNameFormatters;
 
 public class SnakeCaseEventNameFormatter : IEventNameFormatter
 {
-    public string Format(string eventName)
-    {
-        return eventName
+    public string Format(string eventName) =>
+        eventName
             .Replace(".", string.Empty)
             .Underscore();
-    }
 }

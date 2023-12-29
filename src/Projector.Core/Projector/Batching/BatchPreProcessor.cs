@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProjectoR.Core.Projector.Batching;
 
-public class BatchPreProcessor<TProjector>(BatchPreProcessorInfo handlerInfo, IServiceProvider serviceProvider)
+internal sealed class BatchPreProcessor<TProjector>(BatchPreProcessorInfo handlerInfo, IServiceProvider serviceProvider)
 {
     public async ValueTask<object?> Invoke(CancellationToken cancellationToken)
     {
