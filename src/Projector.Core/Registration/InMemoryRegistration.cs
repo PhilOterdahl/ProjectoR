@@ -6,7 +6,7 @@ public static class InMemoryRegistration
         this ProjectoRConfigurator configurator,
         Action<IInMemoryConfigurator> configure)
     {
-        var inMemoryConfigurator = new InMemoryConfigurator(configurator.Services);
+        var inMemoryConfigurator = new InMemoryConfigurator(configurator);
         configure(inMemoryConfigurator);
         return configurator;
     }

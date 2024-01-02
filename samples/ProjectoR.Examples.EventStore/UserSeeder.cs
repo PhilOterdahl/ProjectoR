@@ -83,6 +83,7 @@ public class UserSeeder : BackgroundService
         var options = provider.GetRequiredKeyedService<ProjectorOptions>("User");
         var eventTypeResolver = provider.GetRequiredService<EventTypeResolverProvider>()
             .GetEventTypeResolver(
+                "User",
                 options.SerializationOptions.EventTypeResolver,
                 options.SerializationOptions.Casing,
                 options.SerializationOptions.CustomEventTypeResolverType,

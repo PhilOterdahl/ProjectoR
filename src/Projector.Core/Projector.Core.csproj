@@ -15,6 +15,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="ProjectoR.EventStore" />
         <InternalsVisibleTo Include="ProjectoR.EntityFrameworkCore" />
+        <InternalsVisibleTo Include="ProjectoR.Tests" />
     </ItemGroup>
 
 </Project>

@@ -3,11 +3,12 @@ using ProjectoR.Core.Checkpointing;
 
 namespace ProjectoR.Core.Registration;
 
-internal class InMemoryConfigurator(IServiceCollection services) : IInMemoryConfigurator
+internal class InMemoryConfigurator(ProjectoRConfigurator projectoRConfigurator) : IInMemoryConfigurator
 {
     public IInMemoryConfigurator UseInMemoryCheckpointing()
     {
-        services
+        projectoRConfigurator
+            .Services
             .AddScoped<ICheckpointRepository, InMemoryCheckpointRepository>();
         
         return this;

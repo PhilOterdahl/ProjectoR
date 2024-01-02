@@ -1,27 +1,38 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ProjectoR.Core.Projector.Batching;
 using ProjectoR.Core.Projector.Checkpointing;
+using ProjectoR.Core.Projector.Serialization;
+using ProjectoR.Core.Registration;
+using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
 
-public sealed class ProjectorConfigurator
+internal class ConfiguredProjectors
 {
-    private readonly IServiceCollection _services;
+    private readonly HashSet<string> _projectionNames = [];
     
-    public string ProjectionName { get; private set; }
+    public bool ProjectionNameIsUnique(string projectionName) => _projectionNames.Add(projectionName);
+}
 
-    public ProjectorConfigurator(IServiceCollection services)
-    {
-        _services = services;
-    }
-    
-    public ProjectorConfigurator UseProjector<TProjector>(ProjectorOptions options) where TProjector : class
+internal sealed class ProjectorConfigurator<TProjector>  where TProjector : class
+{
+    public string ProjectionName { get; }
+
+    public ProjectorConfigurator(ProjectoRConfigurator projectoRConfigurator, ProjectorOptions options)
     {
         var projectorType = typeof(TProjector);
         var projectorInfo = new ProjectorInfo(projectorType);
         ProjectionName = projectorInfo.ProjectionName;
+
+        if (!projectoRConfigurator.ProjectionNameIsUnique(ProjectionName))
+            throw new ProjectionNameNotUniqueException(ProjectionName);
         
-        _services
+        if (options.SerializationOptions.EventTypeResolver == EventTypeResolverType.Custom)
+            projectoRConfigurator.Services.TryAddKeyedScoped(typeof(IEventTypeResolver), ProjectionName, options.SerializationOptions.CustomEventTypeResolverType!);
+
+        projectoRConfigurator
+            .Services
             .AddKeyedSingleton<ProjectorCheckpointCache>(projectorInfo.ProjectionName)
             .AddKeyedSingleton(projectorInfo.ProjectionName, options)
             .AddScoped<TProjector>()
@@ -29,11 +40,13 @@ public sealed class ProjectorConfigurator
             .AddSingleton<ProjectorService<TProjector>>(serviceProvider => new ProjectorService<TProjector>(serviceProvider, projectorInfo));
 
         if (projectorInfo.HasBatchPreProcessor)
-            _services.AddScoped<BatchPreProcessor<TProjector>>(provider => new BatchPreProcessor<TProjector>(projectorInfo.BatchPreProcessorInfo, provider));
+            projectoRConfigurator
+                .Services
+                .AddScoped<BatchPreProcessor<TProjector>>(provider => new BatchPreProcessor<TProjector>(projectorInfo.BatchPreProcessorInfo, provider));
         
         if (projectorInfo.HasBatchPostProcessor)
-            _services.AddScoped<BatchPostProcessor<TProjector>>(provider => new BatchPostProcessor<TProjector>(projectorInfo.BatchPostProcessorInfo, provider));
-
-        return this;
+            projectoRConfigurator
+                .Services
+                .AddScoped<BatchPostProcessor<TProjector>>(provider => new BatchPostProcessor<TProjector>(projectorInfo.BatchPostProcessorInfo, provider));
     }
 }

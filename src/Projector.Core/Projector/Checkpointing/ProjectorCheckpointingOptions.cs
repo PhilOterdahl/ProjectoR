@@ -18,7 +18,7 @@ public sealed class ProjectorCheckpointingOptions
         return this;
     }
     
-    public ProjectorCheckpointingOptions CheckpointInInterval(int checkPointingInterval)
+    public ProjectorCheckpointingOptions CheckpointInIntervals(int checkPointingInterval)
     {
         if (checkPointingInterval <= 0)
             throw new ArgumentOutOfRangeException(nameof(checkPointingInterval), "Checkpointing interval needs to be greater than zero");

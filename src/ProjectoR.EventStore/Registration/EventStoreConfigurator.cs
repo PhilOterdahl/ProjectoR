@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.Projector;
+using ProjectoR.Core.Registration;
 using ProjectoR.Core.Subscription;
 using Projector.EventStore.Checkpointing;
 using Projector.EventStore.Subscription;
@@ -16,17 +17,18 @@ public interface IEventStoreConfigurator
 
 internal class EventStoreConfigurator : IEventStoreConfigurator
 {
-    private readonly IServiceCollection _services;
+    private readonly ProjectoRConfigurator _projectoRConfigurator;
 
-    public EventStoreConfigurator(IServiceCollection services, string connectionString)
+    public EventStoreConfigurator(ProjectoRConfigurator projectoRConfigurator, string connectionString)
     {
-        _services = services;
-        _services.AddEventStoreClient(connectionString);
+        _projectoRConfigurator = projectoRConfigurator;
+        projectoRConfigurator.Services.AddEventStoreClient(connectionString);
     }
 
     public IEventStoreConfigurator UseEventStoreCheckpointing()
     {
-        _services
+        _projectoRConfigurator
+            .Services
             .AddScoped<ICheckpointRepository, EventStoreCheckpointRepository>();
         
         return this;
@@ -37,11 +39,10 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
         var options = new ProjectorOptions();
         configure?.Invoke(options);
 
-        var projectorConfigurator = new ProjectorConfigurator(_services);
+        var projectorConfigurator = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, options);
 
-        projectorConfigurator.UseProjector<TProjector>(options);
-
-        _services
+        _projectoRConfigurator
+            .Services
             .AddKeyedSingleton(projectorConfigurator.ProjectionName, options)
             .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
 

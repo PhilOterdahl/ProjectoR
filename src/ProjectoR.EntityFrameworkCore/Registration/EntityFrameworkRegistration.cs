@@ -8,7 +8,7 @@ public static class EntityFrameworkRegistration
         this ProjectoRConfigurator configurator, 
         Action<IEntityFrameworkConfigurator> configure)
     {
-        var entityFrameworkConfigurator = new EntityFrameworkConfigurator(configurator.Services);
+        var entityFrameworkConfigurator = new EntityFrameworkConfigurator(configurator);
         configure(entityFrameworkConfigurator);
         return configurator;
     }

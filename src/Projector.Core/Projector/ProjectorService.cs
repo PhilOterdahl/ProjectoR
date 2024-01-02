@@ -228,6 +228,7 @@ internal sealed class ProjectorService<TProjector>
         serviceProvider
             .GetRequiredService<EventTypeResolverProvider>()
             .GetEventTypeResolver(
+                ProjectionName,
                 _options.SerializationOptions.EventTypeResolver,
                 _options.SerializationOptions.Casing,
                 _options.SerializationOptions.CustomEventTypeResolverType,

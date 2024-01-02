@@ -9,7 +9,7 @@ public static class EventStoreRegistration
         string connectionString,
         Action<IEventStoreConfigurator> configure)
     {
-        var eventStoreConfigurator = new EventStoreConfigurator(configurator.Services, connectionString);
+        var eventStoreConfigurator = new EventStoreConfigurator(configurator, connectionString);
         configure(eventStoreConfigurator);
         return configurator;
     }

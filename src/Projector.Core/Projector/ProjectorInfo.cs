@@ -7,8 +7,8 @@ internal sealed class ProjectorInfo
 {
     public Type[] EventTypes { get; private set; } 
     public string ProjectionName { get; private set; }
-    public BatchPreProcessorInfo? BatchPreProcessorInfo { get; private set; }
-    public BatchPostProcessorInfo? BatchPostProcessorInfo { get; private set; }
+    public BatchPreProcessorInfo? BatchPreProcessorInfo { get; }
+    public BatchPostProcessorInfo? BatchPostProcessorInfo { get; }
     public bool HasBatchPreProcessor => BatchPreProcessorInfo is not null;
     public bool HasBatchPostProcessor => BatchPostProcessorInfo is not null;
     
@@ -25,13 +25,13 @@ internal sealed class ProjectorInfo
     
     public ProjectorInfo(Type projectorType)
     {
-        _handlerInfo = GetProjectorHandlerInfo(projectorType);
+        ProjectionName = GetProjectionName(projectorType);
+        _handlerInfo = GetProjectorHandlerInfo(ProjectionName, projectorType);
         BatchPreProcessorInfo = GetPreBatchProcessedBehaviourInfo(projectorType);
         BatchPostProcessorInfo = GetPostBatchProcessedBehaviourInfo(projectorType);
         EventTypes = _handlerInfo
             .Keys
             .ToArray();
-        ProjectionName = GetProjectionName(projectorType);
     }
     
     public ProjectorHandlerInfo GetHandlerInfoForEventType(Type eventType) => _handlerInfo[eventType];
@@ -50,7 +50,7 @@ internal sealed class ProjectorInfo
             .Select(info => new BatchPostProcessorInfo(projectorType, info))
             .SingleOrDefault();
 
-    private static Dictionary<Type, ProjectorHandlerInfo> GetProjectorHandlerInfo(Type projectorType)
+    private static Dictionary<Type, ProjectorHandlerInfo> GetProjectorHandlerInfo(string projectionName, Type projectorType)
     {
         var methods = projectorType.GetMethods();
         var handlerInfo = methods
@@ -59,7 +59,7 @@ internal sealed class ProjectorInfo
             {
                 var parameters = method.GetParameters();
                 if (!parameters.Any())
-                    throw new InvalidOperationException($"No message parameter for projector method: {method.Name}");
+                    throw new ProjectMethodWithOutParametersException(projectionName);
                         
                 var messageType = parameters.First().ParameterType;
                 
@@ -68,7 +68,7 @@ internal sealed class ProjectorInfo
             .ToArray();
 
         if (!handlerInfo.Any())
-            throw new InvalidOperationException($"No valid projector methods found for projector: {projectorType.Name}");
+            throw new NoValidProjectMethodException(projectionName);
 
         var eventTypeGroup = handlerInfo
             .GroupBy(info => info.MessageType)
@@ -77,7 +77,7 @@ internal sealed class ProjectorInfo
         var eventTypeIsUsedForMultipleProjectorMethods = eventTypeGroup is not null;
         
         if (eventTypeIsUsedForMultipleProjectorMethods)
-            throw new InvalidOperationException($"Multiple methods found for projector: {projectorType.Name} for eventType: {eventTypeGroup!.Key.Name}");
+            throw new MultipleProjectMethodsWithSameEventTypeException(projectionName, eventTypeGroup!.Key);
 
         return handlerInfo.ToDictionary(info => info.MessageType);
     }

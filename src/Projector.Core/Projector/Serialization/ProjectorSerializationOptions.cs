@@ -12,7 +12,7 @@ public enum EventTypeResolverType
 
 public sealed class ProjectorSerializationOptions
 {
-    public JsonSerializerOptions SerializerOptions { get; set; } = JsonSerializerOptions.Default;
+    public JsonSerializerOptions JsonSerializerOptions { get; set; } = JsonSerializerOptions.Default;
     public EventTypeResolverType EventTypeResolver { get; private set; } = EventTypeResolverType.ClassName;
     public EventTypeResolverCasing Casing { get; private set; } = EventTypeResolverCasing.KebabCase;
     public Type? CustomEventTypeResolverType { get; private set; }

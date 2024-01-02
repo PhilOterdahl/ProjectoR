@@ -8,6 +8,7 @@ namespace ProjectoR.Core.TypeResolvers;
 public class EventTypeResolverProvider(IServiceProvider serviceProvider)
 {
     public IEventTypeResolver GetEventTypeResolver(
+        string projectionName,
         EventTypeResolverType type,
         EventTypeResolverCasing casing,
         Type? customEventTypeResolverType,
@@ -16,7 +17,7 @@ public class EventTypeResolverProvider(IServiceProvider serviceProvider)
         {
             EventTypeResolverType.Namespace => CreateNameSpaceEventTypeResolver(casing, eventTypes),
             EventTypeResolverType.ClassName => CreateClassNameEventTypeResolver(casing, eventTypes),
-            EventTypeResolverType.Custom => GetCustomEventTypeResolver(customEventTypeResolverType)
+            EventTypeResolverType.Custom => GetCustomEventTypeResolver(projectionName, customEventTypeResolverType)
         };
 
     private NameSpaceEventTypeResolver CreateNameSpaceEventTypeResolver(EventTypeResolverCasing casing, Type[] eventTypes)
@@ -33,8 +34,12 @@ public class EventTypeResolverProvider(IServiceProvider serviceProvider)
         return resolver;
     }
     
-    private IEventTypeResolver GetCustomEventTypeResolver(Type customResolverType) =>
-        (IEventTypeResolver)serviceProvider.GetRequiredService(customResolverType);
+    private IEventTypeResolver GetCustomEventTypeResolver(string projectionName, Type customResolverType)
+    {
+        var resolver = serviceProvider.GetService(customResolverType) ??
+                       serviceProvider.GetRequiredKeyedService(customResolverType, projectionName);
+        return (IEventTypeResolver)resolver;
+    }
 
     private IEventNameFormatter GetEventNameFormatter(EventTypeResolverCasing casing) =>
         casing switch
