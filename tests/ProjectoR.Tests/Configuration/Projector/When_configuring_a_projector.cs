@@ -24,7 +24,7 @@ public class When_configuring_a_projector
     public When_configuring_a_projector()
     {
         var projectoRConfigurator = new ProjectoRConfigurator(_services);
-        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());
+        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
     }
     
     [Fact]

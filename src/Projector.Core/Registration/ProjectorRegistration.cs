@@ -1,6 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using ProjectoR.Core.Subscription;
-using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Registration;
 
@@ -13,8 +11,6 @@ public static class ProjectoRRegistration
         var configurator = new ProjectoRConfigurator(services);
         configure(configurator);
 
-        return services
-            .AddSingleton<EventTypeResolverProvider>()
-            .AddHostedService<SubscriptionWorker>();
+        return services;
     }
 }

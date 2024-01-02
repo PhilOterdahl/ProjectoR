@@ -30,7 +30,7 @@ public class When_configuring_a_projector_with_multiple_project_methods_with_sam
 
         var projectoRConfigurator = new ProjectoRConfigurator(services);
         
-        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());;
+        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
 
         act
             .Should()

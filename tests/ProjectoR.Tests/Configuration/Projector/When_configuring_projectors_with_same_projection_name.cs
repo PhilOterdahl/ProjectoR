@@ -33,9 +33,9 @@ public class When_configuring_projectors_with_same_projection_name
         var services = new ServiceCollection();
 
         var projectoRConfigurator = new ProjectoRConfigurator(services);
-        var projectorConfigurator = new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());
+        var projectorConfigurator = new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
         
-        var act = () =>  new ProjectorConfigurator<TestProjector2>(projectoRConfigurator, new ProjectorOptions());
+        var act = () =>  new ProjectorConfigurator<TestProjector2>(projectoRConfigurator);
 
         act
             .Should()

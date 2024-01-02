@@ -7,7 +7,7 @@ using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Tests.Configuration.Projector;
 
-public class When_configuring_a_projector_with_a_custom_event_type_resolver
+public class When_configuring_a_custom_event_type_resolver_as_default_resolver
 {
     public record TestEvent();
 
@@ -40,14 +40,11 @@ public class When_configuring_a_projector_with_a_custom_event_type_resolver
     
     private readonly ServiceCollection _services = [];
 
-    public When_configuring_a_projector_with_a_custom_event_type_resolver()
+    public When_configuring_a_custom_event_type_resolver_as_default_resolver()
     {
         var projectoRConfigurator = new ProjectoRConfigurator(_services);
-     
-        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator, projectorOptions =>
-        {
-            projectorOptions.SerializationOptions.UseCustomEventTypeResolver<CustomEventTypeResolver>();
-        });
+        projectoRConfigurator.SerializationOptions.UseCustomEventTypeResolver<CustomEventTypeResolver>();
+        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
     }
     
     [Fact]
@@ -55,9 +52,8 @@ public class When_configuring_a_projector_with_a_custom_event_type_resolver
     {
         _services
             .Should()
-            .Contain(descriptor => descriptor.ServiceKey == "Test1" && 
-                                   descriptor.ServiceType == typeof(IEventTypeResolver) &&
-                                   descriptor.KeyedImplementationType == typeof(CustomEventTypeResolver)
+            .Contain(descriptor => descriptor.ServiceType == typeof(IEventTypeResolver) &&
+                                   descriptor.ImplementationType == typeof(CustomEventTypeResolver)
             );
     }
     

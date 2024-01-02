@@ -36,14 +36,10 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
     
     public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
-        var options = new ProjectorOptions();
-        configure?.Invoke(options);
-
-        var projectorConfigurator = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, options);
+        _ = new ProjectorConfigurator<TProjector>(_projectoRConfigurator);
 
         _projectoRConfigurator
             .Services
-            .AddKeyedSingleton(projectorConfigurator.ProjectionName, options)
             .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
 
         return this;

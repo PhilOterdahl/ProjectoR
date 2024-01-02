@@ -59,4 +59,13 @@ public sealed class ProjectorSerializationOptions
         Casing = EventTypeResolverCasing.KebabCase;
         return this;
     }
+
+    public ProjectorSerializationOptions Copy() =>
+        new()
+        {
+            Casing = Casing,
+            EventTypeResolver = EventTypeResolver,
+            JsonSerializerOptions = JsonSerializerOptions,
+            CustomEventTypeResolverType = CustomEventTypeResolverType
+        };
 }

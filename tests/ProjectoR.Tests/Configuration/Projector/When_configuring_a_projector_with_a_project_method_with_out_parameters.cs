@@ -26,7 +26,7 @@ public class When_configuring_a_projector_with_a_project_method_with_out_paramet
 
         var projectoRConfigurator = new ProjectoRConfigurator(services);
         
-        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());;
+        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
 
         act
             .Should()

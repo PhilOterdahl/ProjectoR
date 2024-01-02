@@ -22,7 +22,7 @@ public class When_configuring_a_projector_without_a_valid_project_method
 
         var projectoRConfigurator = new ProjectoRConfigurator(services);
         
-        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());;
+        var act = () =>  new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
 
         act
             .Should()

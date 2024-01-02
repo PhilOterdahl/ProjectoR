@@ -29,7 +29,7 @@ public class When_configuring_a_projector_with_a_pre_processor
     public When_configuring_a_projector_with_a_pre_processor()
     {
         var projectoRConfigurator = new ProjectoRConfigurator(_services);
-        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator, new ProjectorOptions());
+        _ = new ProjectorConfigurator<TestProjector>(projectoRConfigurator);
     }
     
     [Fact]
