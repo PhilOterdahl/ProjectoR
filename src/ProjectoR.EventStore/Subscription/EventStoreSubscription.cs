@@ -54,7 +54,7 @@ internal class EventStoreProjectionSubscription<TProjector>(
         await _projectorService
             .Stop(cancellationToken)
             .ConfigureAwait(false);
-        _subscription.Dispose();
+        _subscription?.Dispose();
     }
 
     private void SubscriptionDropped(

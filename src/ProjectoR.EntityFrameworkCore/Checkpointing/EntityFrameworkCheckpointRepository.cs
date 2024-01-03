@@ -10,6 +10,7 @@ public class EntityFrameworkCheckpointRepository(ICheckpointingContext checkpoin
             .Checkpoints
             .Where(checkpoint => checkpoint.ProjectionName == projectionName)
             .SelectCheckpoint()
+            .AsNoTracking()
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
     public async Task<Checkpoint> Load(string projectionName, CancellationToken cancellationToken = default) =>
@@ -17,6 +18,7 @@ public class EntityFrameworkCheckpointRepository(ICheckpointingContext checkpoin
             .Checkpoints
             .Where(checkpoint => checkpoint.ProjectionName == projectionName)
             .SelectCheckpoint()
+            .AsNoTracking()
             .SingleAsync(cancellationToken: cancellationToken);
 
     public async Task MakeCheckpoint(Checkpoint checkpoint, CancellationToken cancellationToken = default)
@@ -24,10 +26,12 @@ public class EntityFrameworkCheckpointRepository(ICheckpointingContext checkpoin
         var checkPointExists = await checkpointingContext
             .Checkpoints
             .AnyAsync(c => c.ProjectionName == checkpoint.ProjectionName, cancellationToken: cancellationToken);
+
+        var alreadyTracked = checkpointingContext.Checkpoints.Entry(checkpoint).State == EntityState.Detached;
         
-        if (checkPointExists)
+        if (checkPointExists && !alreadyTracked)
             checkpointingContext.Checkpoints.Update(checkpoint);
-        else
+        else if(!alreadyTracked)
             checkpointingContext.Checkpoints.Add(checkpoint);
         
         await checkpointingContext.SaveChangesAsync(cancellationToken);

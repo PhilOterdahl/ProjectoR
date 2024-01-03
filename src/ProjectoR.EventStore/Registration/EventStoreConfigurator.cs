@@ -36,7 +36,7 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
     
     public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
-        _ = new ProjectorConfigurator<TProjector>(_projectoRConfigurator);
+        _ = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
 
         _projectoRConfigurator
             .Services
