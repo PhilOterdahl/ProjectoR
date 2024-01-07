@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectoR.Core.Checkpointing;
 
-namespace ProjectoR.EntityFrameworkCore;
+namespace ProjectoR.EntityFrameworkCore.Checkpointing;
 
 public interface ICheckpointingContext 
 {

@@ -9,12 +9,18 @@ using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
 
-internal sealed class ProjectorService<TProjector>
+internal interface IProjectorService
+{
+    Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken);
+}
+
+internal sealed class ProjectorService<TProjector> : IProjectorService
 {
     private readonly ProjectorOptions _options;
     private readonly ProjectorCheckpointCache _checkpointCache;
     private readonly ProjectorInfo _projectorInfo;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ProjectorWorkQueue _projectorWorkQueue;
     private readonly Channel<EventData> _eventChannel;
     private bool _stopping;
     private int _eventsProcessedSinceCheckpoint;
@@ -27,6 +33,7 @@ internal sealed class ProjectorService<TProjector>
     public ProjectorService(IServiceProvider serviceProvider, ProjectorInfo projectorInfo)
     {
         _serviceProvider = serviceProvider;
+        _projectorWorkQueue = serviceProvider.GetRequiredService<ProjectorWorkQueue>();
         _options = serviceProvider.GetRequiredKeyedService<ProjectorOptions>(projectorInfo.ProjectionName);
         _checkpointCache = serviceProvider.GetRequiredKeyedService<ProjectorCheckpointCache>(projectorInfo.ProjectionName);
         _projectorInfo = projectorInfo;
@@ -77,12 +84,13 @@ internal sealed class ProjectorService<TProjector>
             .Batch(_options.BatchingOptions.BatchSize, true)
             .WithTimeout(_options.BatchingOptions.BatchTimeout.Milliseconds)
             .TaskReadAllAsync(cancellationToken, async batch => 
-                await Project(batch, cancellationToken)
+                await _projectorWorkQueue
+                    .QueueWork(ProjectionName, batch, _options.Priority, cancellationToken)
                     .ConfigureAwait(false)
             )
             .ConfigureAwait(false);
 
-    private async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
+    public async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var eventTypeResolver = GetEventTypeResolver(scope.ServiceProvider);

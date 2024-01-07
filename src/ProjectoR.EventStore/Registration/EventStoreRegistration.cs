@@ -4,8 +4,8 @@ namespace Projector.EventStore.Registration;
 
 public static class EventStoreRegistration
 {
-    public static ProjectoRConfigurator UseEventStore(
-        this ProjectoRConfigurator configurator, 
+    public static IProjectoRConfigurator UseEventStore(
+        this IProjectoRConfigurator configurator, 
         string connectionString,
         Action<IEventStoreConfigurator> configure)
     {

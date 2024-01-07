@@ -17,6 +17,7 @@ public class ContactInformation
 
 public class Address
 {
+    public string CountryCode { get; set; }
     public string PostalCode { get; set; }
     public string City { get; set; }
     public string Street { get; set; }

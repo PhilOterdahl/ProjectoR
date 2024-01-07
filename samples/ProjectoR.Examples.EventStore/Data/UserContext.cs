@@ -8,6 +8,8 @@ namespace ProjectoR.Examples.EventStore.Data;
 public class UserContext(DbContextOptions<UserContext> options) : DbContext(options), ICheckpointingContext
 {
     public DbSet<UserProjection> UsersProjections { get; set; }
+    public DbSet<AmountOfUserPerCityProjection> AmountOfUsersPerCityProjections { get; set; }
+    public DbSet<AmountOfUsersPerCountryProjection> AmountOfUsersPerCountryProjections { get; set; }
     public DbSet<CheckpointState> Checkpoints { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

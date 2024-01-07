@@ -9,4 +9,5 @@ public sealed class ProjectorOptions(ProjectorSerializationOptions? serializatio
     public ProjectorSerializationOptions SerializationOptions { get; } = serializationOptions ?? new ProjectorSerializationOptions();
     public ProjectorCheckpointingOptions CheckpointingOptions { get; } = new();
     public ProjectorBatchingOptions BatchingOptions { get; } = new();
+    public ProjectorPriority Priority { get; set; } = ProjectorPriority.Normal;
 }

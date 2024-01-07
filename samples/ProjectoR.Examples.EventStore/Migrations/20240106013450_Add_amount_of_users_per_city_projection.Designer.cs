@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectoR.Examples.EventStore.Data;
@@ -11,9 +12,11 @@ using ProjectoR.Examples.EventStore.Data;
 namespace ProjectoR.Examples.EventStore.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20240106013450_Add_amount_of_users_per_city_projection")]
+    partial class Add_amount_of_users_per_city_projection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,19 +51,6 @@ namespace ProjectoR.Examples.EventStore.Migrations
                     b.ToTable("AmountOfUsersPerCity", "Projection");
                 });
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStore.Data.AmountOfUsersPerCountryProjection", b =>
-                {
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CountryCode");
-
-                    b.ToTable("AmountOfUsersPerCountry", "Projection");
-                });
-
             modelBuilder.Entity("ProjectoR.Examples.EventStore.Data.UserProjection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -88,10 +78,6 @@ namespace ProjectoR.Examples.EventStore.Migrations
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("CountryCode")
                                 .IsRequired()
                                 .HasColumnType("text");
 

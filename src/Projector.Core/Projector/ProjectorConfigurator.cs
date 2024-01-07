@@ -19,7 +19,7 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
 {
     public string ProjectionName { get; }
 
-    public ProjectorConfigurator(ProjectoRConfigurator projectoRConfigurator, Action<ProjectorOptions>? configure = null)
+    public ProjectorConfigurator(IProjectoRConfigurator projectoRConfigurator, Action<ProjectorOptions>? configure = null)
     {
         var projectorType = typeof(TProjector);
         var projectorInfo = new ProjectorInfo(projectorType);
@@ -39,7 +39,8 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
             .AddKeyedSingleton(projectorInfo.ProjectionName, options)
             .AddScoped<TProjector>()
             .AddScoped<ProjectorMethodInvoker<TProjector>>(provider => new ProjectorMethodInvoker<TProjector>(projectorInfo, provider))
-            .AddSingleton<ProjectorService<TProjector>>(serviceProvider => new ProjectorService<TProjector>(serviceProvider, projectorInfo));
+            .AddSingleton<ProjectorService<TProjector>>(serviceProvider => new ProjectorService<TProjector>(serviceProvider, projectorInfo))
+            .AddKeyedSingleton<IProjectorService>(ProjectionName, (provider, _) => provider.GetRequiredService<ProjectorService<TProjector>>());
 
         if (projectorInfo.HasBatchPreProcessor)
             projectoRConfigurator
@@ -52,7 +53,7 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
                 .AddScoped<BatchPostProcessor<TProjector>>(provider => new BatchPostProcessor<TProjector>(projectorInfo.BatchPostProcessorInfo, provider));
     }
 
-    private void ConfigureCustomEventTypeResolver(ProjectoRConfigurator projectoRConfigurator, ProjectorOptions options)
+    private void ConfigureCustomEventTypeResolver(IProjectoRConfigurator projectoRConfigurator, ProjectorOptions options)
     {
         if (!IsUsingDefaultEventTypeResolver(projectoRConfigurator, options))   
             projectoRConfigurator.Services.TryAddKeyedScoped(typeof(IEventTypeResolver), ProjectionName, options.SerializationOptions.CustomEventTypeResolverType!);
@@ -60,13 +61,13 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
             projectoRConfigurator.Services.AddScoped(typeof(IEventTypeResolver), options.SerializationOptions.CustomEventTypeResolverType!);
     }
 
-    private static bool IsUsingDefaultEventTypeResolver(ProjectoRConfigurator projectoRConfigurator, ProjectorOptions options) => 
+    private static bool IsUsingDefaultEventTypeResolver(IProjectoRConfigurator projectoRConfigurator, ProjectorOptions options) => 
         projectoRConfigurator.SerializationOptions.CustomEventTypeResolverType == options.SerializationOptions.CustomEventTypeResolverType;
 
-    private static bool EventTypeResolverAlreadyRegistered(ProjectoRConfigurator projectoRConfigurator) => 
+    private static bool EventTypeResolverAlreadyRegistered(IProjectoRConfigurator projectoRConfigurator) => 
         projectoRConfigurator.Services.Any(descriptor => descriptor.ServiceType == typeof(IEventTypeResolver));
 
-    private static bool ProjectionNameIsUnique(ProjectoRConfigurator projectoRConfigurator, string projectionName)
+    private static bool ProjectionNameIsUnique(IProjectoRConfigurator projectoRConfigurator, string projectionName)
     {
         var configuredProjectors = projectoRConfigurator
             .Services

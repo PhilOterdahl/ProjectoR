@@ -17,9 +17,9 @@ public interface IEventStoreConfigurator
 
 internal class EventStoreConfigurator : IEventStoreConfigurator
 {
-    private readonly ProjectoRConfigurator _projectoRConfigurator;
+    private readonly IProjectoRConfigurator _projectoRConfigurator;
 
-    public EventStoreConfigurator(ProjectoRConfigurator projectoRConfigurator, string connectionString)
+    public EventStoreConfigurator(IProjectoRConfigurator projectoRConfigurator, string connectionString)
     {
         _projectoRConfigurator = projectoRConfigurator;
         projectoRConfigurator.Services.AddEventStoreClient(connectionString);
@@ -36,10 +36,11 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
     
     public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
-        _ = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
+        var configurator = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
 
         _projectoRConfigurator
             .Services
+            .AddKeyedSingleton<IProjectionSubscription>(configurator.ProjectionName, (provider, _) => provider.GetRequiredService<EventStoreProjectionSubscription<TProjector>>())
             .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
 
         return this;

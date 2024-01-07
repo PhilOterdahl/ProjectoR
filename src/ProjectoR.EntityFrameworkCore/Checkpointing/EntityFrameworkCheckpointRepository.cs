@@ -26,12 +26,12 @@ public class EntityFrameworkCheckpointRepository(ICheckpointingContext checkpoin
         var checkPointExists = await checkpointingContext
             .Checkpoints
             .AnyAsync(c => c.ProjectionName == checkpoint.ProjectionName, cancellationToken: cancellationToken);
-
-        var alreadyTracked = checkpointingContext.Checkpoints.Entry(checkpoint).State == EntityState.Detached;
+        
+        var alreadyTracked = checkpointingContext.Checkpoints.Entry(checkpoint).State != EntityState.Detached;
         
         if (checkPointExists && !alreadyTracked)
             checkpointingContext.Checkpoints.Update(checkpoint);
-        else if(!alreadyTracked)
+        else if (!alreadyTracked)
             checkpointingContext.Checkpoints.Add(checkpoint);
         
         await checkpointingContext.SaveChangesAsync(cancellationToken);
