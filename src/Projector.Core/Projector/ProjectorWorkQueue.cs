@@ -6,13 +6,6 @@ using ProjectoR.Core.Registration;
 
 namespace ProjectoR.Core.Projector;
 
-public enum ProjectorPriority
-{
-    Lowest,
-    Normal,
-    Highest
-}
-
 internal class ProjectorWorkQueue(ProjectorROptions options, IServiceProvider serviceProvider) : BackgroundService
 {
     private record Work(string ProjectionName, IEnumerable<EventData> Events, ProjectorPriority Priority);
