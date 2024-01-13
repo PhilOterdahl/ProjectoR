@@ -1,81 +1,131 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Open.ChannelExtensions;
 using ProjectoR.Core.Registration;
+using ProjectoR.Core.Subscription;
 
 namespace ProjectoR.Core.Projector;
 
-internal class ProjectorWorkQueue(ProjectorROptions options, IServiceProvider serviceProvider) : BackgroundService
+internal class ProjectorWorkQueue(
+    ProjectorROptions options, 
+    IServiceProvider serviceProvider, 
+    ILogger<ProjectorWorkQueue> logger) : BackgroundService
 {
-    private record Work(string ProjectionName, IEnumerable<EventData> Events, ProjectorPriority Priority);
-
-    private readonly Channel<Work> _queue = Channel.CreateBounded<Work>(new BoundedChannelOptions(10000)
-    {
-        FullMode = BoundedChannelFullMode.Wait,
-        AllowSynchronousContinuations = false,
-    });
+    private record Work(string ProjectionName, ProjectorPriority Priority, IEnumerable<EventData> Events);
     
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken) => await ProcessQueue(stoppingToken);
+    private readonly Channel<Work> _workQueue = Channel.CreateBounded<Work>(
+        new BoundedChannelOptions(10000)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = false,
+        });
+
+    private BatchingChannelReader<Work, List<Work>> _workReader = null!;
+    private bool _processing;
+    
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _workReader = _workQueue
+            .Reader
+            .Batch(1000, true, true);
+            // .WithTimeout(TimeSpan.FromMilliseconds(500));
+        
+        await ProcessQueue(stoppingToken)
+            .ConfigureAwait(false);
+    }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _queue.CompleteAsync();
-        await base.StopAsync(cancellationToken);
+        await _workQueue.CompleteAsync();
+        
+        await base
+            .StopAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    public async Task QueueWork(
+    public async Task Enqueue(
         string projectionName, 
         IEnumerable<EventData> events, 
         ProjectorPriority priority,
-        CancellationToken cancellationToken) =>
-        await _queue.Writer.WriteAsync(new Work(projectionName, events, priority), cancellationToken);
-
-    private async Task ProcessQueue(CancellationToken cancellationToken) =>
-        await _queue
-            .Reader
-            .Batch(100, true)
-            .WithTimeout(options.PrioritizationTime)
-            .Pipe(
-                1,
-                list => list
-                    .GroupBy(item => (item.ProjectionName, item.Priority))
-                    .OrderByDescending(item => item.Key.Priority),
-                cancellationToken: cancellationToken
-            )
-            .TaskReadAllAsync(
-                async workGroupedByProjector =>
-                {
-                    var parallelOptions = new ParallelOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        MaxDegreeOfParallelism = options.MaxConcurrency
-                    };
-
-                    await Parallel.ForEachAsync(
-                        workGroupedByProjector,
-                        parallelOptions,
-                        async (projectorWork, ct) => await ProjectEvents(projectorWork, ct)
-                    );
-                },
-                cancellationToken
-            );
-
-    private async Task ProjectEvents(IEnumerable<Work> work, CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        foreach (var (projectionName, events, _) in work)
+        await _workQueue.Writer.WriteAsync(new Work(projectionName, priority, events), cancellationToken);
+        
+        if (_processing)
+            return;
+        
+        _workReader.ForceBatch();
+    }
+
+    private async Task ProcessQueue(CancellationToken cancellationToken)
+    {
+        var parallelOptions = new ParallelOptions
         {
-            var projectorService = serviceProvider.GetRequiredKeyedService<IProjectorService>(projectionName);
+            CancellationToken = cancellationToken,
+            MaxDegreeOfParallelism = options.MaxConcurrency
+        };
+
+        await _workReader.TaskReadAllAsync(async workQueue =>
+        {
+            _processing = true;
             
-            try
+            var workGroupedOnProjector = workQueue
+                .GroupBy(queue => (queue.ProjectionName, queue.Priority))
+                .OrderByDescending(item => item.Key.Item2)
+                .ToArray();
+
+            await Parallel.ForEachAsync(
+                workGroupedOnProjector,
+                parallelOptions,
+                async (projectorWork, ct) =>
+                {
+                    var projectorService = serviceProvider
+                        .GetRequiredKeyedService<IProjectorService>(projectorWork.Key.Item1);
+
+                    if (projectorService.Stopped)
+                        return;
+
+                    try
+                    {
+                        foreach (var work in projectorWork)
+                            await Project(projectorService, work.Events, ct);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger.LogError(exception,
+                            "Error when projecting for projection: {projectionName}, stopping subscription",
+                            projectorService.ProjectionName
+                        );
+            
+                        var subscription =
+                            serviceProvider.GetRequiredKeyedService<IProjectionSubscription>(projectorService.ProjectionName);
+            
+                        await subscription
+                            .Stop(cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                   
+                });
+
+            if (_workQueue.Reader.TryPeek(out _))
             {
-                await projectorService.Project(events, cancellationToken);
+                _workReader.ForceBatch();
+                return;
             }
-            catch (Exception e)
-            {
-               // TODO stop projector and subscription but continue with sucessful projectors
-                throw;
-            }
-        }
+            
+            _processing = false;
+        }, cancellationToken);
+    }
+    private static async ValueTask Project(
+        IProjectorService projectorService, 
+        IEnumerable<EventData> events, 
+        CancellationToken cancellationToken)
+    {
+        await projectorService
+            .Project(events, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

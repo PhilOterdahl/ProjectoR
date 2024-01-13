@@ -1,39 +1,32 @@
 using System.Text.Json;
 using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Examples.EventStore;
 
-public class UserSeeder : BackgroundService
+public static class UserSeeder
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public UserSeeder(IServiceProvider serviceProvider)
+    public static async Task Seed(
+        int seedAmount,
+        IServiceProvider serviceProvider, 
+        CancellationToken stoppingToken = default)
     {
-        _serviceProvider = serviceProvider;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await using var scope = _serviceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         var provider = scope.ServiceProvider;
 
         var eventStoreClient = provider.GetRequiredService<EventStoreClient>();
-        await Parallel.ForEachAsync(
-            Enumerable.Range(0, 100000),
-            stoppingToken,
-            async (_, ct) =>
+        var events = Enumerable
+            .Range(0, seedAmount)
+            .SelectMany(_ =>
             {
                 var pepeId = Guid.NewGuid();
                 var charlieId = Guid.NewGuid();
                 var dennisId = Guid.NewGuid();
-                var PhilId = Guid.NewGuid();
+                var philId = Guid.NewGuid();
 
-
-                var events = new object[]
+                return new object[]
                 {
                     new User.Enrolled(
                         pepeId,
@@ -69,7 +62,7 @@ public class UserSeeder : BackgroundService
                         "Audubon Plaza 18"
                     ),
                     new User.Enrolled(
-                        PhilId,
+                        philId,
                         "Phil",
                         "Dahlen",
                         "Phil.Dahlen@hotmail.com",
@@ -95,25 +88,21 @@ public class UserSeeder : BackgroundService
                     //     "USA"
                     // ),
                 };
-
-                var options = provider.GetRequiredKeyedService<ProjectorOptions>("User");
-                var eventTypeResolver = provider.GetRequiredService<EventTypeResolverProvider>()
-                    .GetEventTypeResolver(
-                        "User",
-                        options.SerializationOptions.EventTypeResolver,
-                        options.SerializationOptions.Casing,
-                        options.SerializationOptions.CustomEventTypeResolverType,
-                        events.Select(@event => @event.GetType()).Distinct().ToArray()
-                    );
-
-                var data = events.Select(@event => new EventData(
+            });
+        
+            var eventTypeResolver = provider.GetRequiredKeyedService<IEventTypeResolver>("AmountOfUsersPerCity");
+            var chunks = events
+                .Select(@event => new EventData(
                     Uuid.NewUuid(),
                     eventTypeResolver.GetName(@event.GetType()),
                     JsonSerializer.SerializeToUtf8Bytes(@event).ToArray()
-                ));
+                ))
+                .Chunk(2000);
 
-                await eventStoreClient.AppendToStreamAsync("test-stream", StreamState.Any, data,
-                    cancellationToken: ct);
-            });
+            await Parallel.ForEachAsync(
+                chunks, 
+                stoppingToken,
+                async (data, token) => await eventStoreClient.AppendToStreamAsync("test-stream", StreamState.Any, data, cancellationToken: stoppingToken)
+            );
     }
 }

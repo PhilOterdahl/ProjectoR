@@ -3,10 +3,10 @@ using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
 using ProjectoR.Core.Subscription;
-using Projector.EventStore.Checkpointing;
-using Projector.EventStore.Subscription;
+using ProjectoR.EventStore.Checkpointing;
+using ProjectoR.EventStore.Subscription;
 
-namespace Projector.EventStore.Registration;
+namespace ProjectoR.EventStore.Registration;
 
 public interface IEventStoreConfigurator
 {
@@ -41,7 +41,8 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
         _projectoRConfigurator
             .Services
             .AddKeyedSingleton<IProjectionSubscription>(configurator.ProjectionName, (provider, _) => provider.GetRequiredService<EventStoreProjectionSubscription<TProjector>>())
-            .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
+            .AddSingleton<IProjectionSubscription>(provider => provider.GetRequiredService<EventStoreProjectionSubscription<TProjector>>())
+            .AddSingleton<EventStoreProjectionSubscription<TProjector>>();
 
         return this;
     }

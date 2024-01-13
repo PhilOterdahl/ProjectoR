@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Subscription;
 
-namespace Projector.EventStore.Subscription;
+namespace ProjectoR.EventStore.Subscription;
 
 internal class EventStoreProjectionSubscription<TProjector>(
     EventStoreClient eventStoreClient,
@@ -12,7 +12,7 @@ internal class EventStoreProjectionSubscription<TProjector>(
     : IProjectionSubscription
 {
     private bool _stopping;
-    private StreamSubscription _subscription;
+    private StreamSubscription? _subscription;
     private readonly ProjectorService<TProjector> _projectorService = projectorService;
 
     public async Task Initialize(CancellationToken cancellationToken) => await projectorService.Start(cancellationToken);
@@ -41,6 +41,8 @@ internal class EventStoreProjectionSubscription<TProjector>(
                 cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
+        
+        logger.LogInformation("Subscribed to all stream from position: {position} for projection {projectionName}", position, _projectorService.ProjectionName);
     }
 
     public async Task UpdateProjections(CancellationToken cancellationToken) =>
@@ -55,6 +57,7 @@ internal class EventStoreProjectionSubscription<TProjector>(
             .Stop(cancellationToken)
             .ConfigureAwait(false);
         _subscription?.Dispose();
+        _subscription = null;
     }
 
     private void SubscriptionDropped(
@@ -73,9 +76,6 @@ internal class EventStoreProjectionSubscription<TProjector>(
                     exception.Message
                 );
                 logger.LogInformation("Stopping ...");
-                Stop(cancellationToken)
-                    .GetAwaiter()
-                    .GetResult();
                 return;
             case SubscriptionDroppedReason.ServerError:
                 logger.LogError(
@@ -86,12 +86,12 @@ internal class EventStoreProjectionSubscription<TProjector>(
                 );
                 break;
             case SubscriptionDroppedReason.Disposed:
-                logger.LogError(
+                logger.LogWarning(
                     exception,
                     "Projection subscription for projection: {projection} dropped because the subscription was disposed",
                     projection
                 );
-                break;
+                return;
             default:
                 logger.LogError(
                     exception,
