@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjectoR.Examples.EventStore.Data;
+using ProjectoR.Examples.Common;
 
 #nullable disable
 
 namespace ProjectoR.Examples.EventStore.Migrations
 {
-    [DbContext(typeof(UserContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20240107164657_Add_amount_of_user_per_country_projection")]
     partial class Add_amount_of_user_per_country_projection
     {

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
-using ProjectoR.Core.Projector;
 using ProjectoR.Core.TypeResolvers;
+using ProjectoR.Examples.Common;
 
 namespace ProjectoR.Examples.EventStore;
 
@@ -72,21 +72,21 @@ public static class UserSeeder
                         "17053",
                         "Bästegatan 24"
                     ),
-                    // new User.Moved(
-                    //     dennisId,
-                    //     "Philadelphia",
-                    //     "19014",
-                    //     "Bellevue Steet 15"
-                    // ),
-                    // new User.ChangedContactInformation(
-                    //     pepeId,
-                    //     "04565567567",
-                    //     "Pepe.Sliva@hotmail.com"
-                    // ),
-                    // new User.Quit(
-                    //     dennisId,
-                    //     "USA"
-                    // ),
+                    new User.Moved(
+                        dennisId,
+                        "Philadelphia",
+                        "19014",
+                        "Bellevue Steet 15"
+                    ),
+                    new User.ChangedContactInformation(
+                        pepeId,
+                        "04565567567",
+                        "Pepe.Sliva@hotmail.com"
+                    ),
+                    new User.Quit(
+                        dennisId,
+                        "USA"
+                    ),
                 };
             });
         

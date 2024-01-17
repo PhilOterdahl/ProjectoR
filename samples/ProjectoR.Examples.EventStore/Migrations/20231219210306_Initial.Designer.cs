@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjectoR.Examples.EventStore.Data;
+using ProjectoR.Examples.Common;
 
 #nullable disable
 
 namespace ProjectoR.Examples.EventStore.Migrations
 {
-    [DbContext(typeof(UserContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20231219210306_Initial")]
     partial class Initial
     {

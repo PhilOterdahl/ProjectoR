@@ -1,30 +1,26 @@
 using EventStore.Client;
 using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
-using ProjectoR.Core.Subscription;
 
 namespace ProjectoR.EventStore.Subscription;
 
-internal class EventStoreProjectionSubscription<TProjector>(
+internal sealed class EventStoreProjectionSubscription<TProjector>(
     EventStoreClient eventStoreClient,
     ProjectorService<TProjector> projectorService,
     ILogger<EventStoreProjectionSubscription<TProjector>> logger)
-    : IProjectionSubscription
+    : Core.Subscription.Subscription(projectorService)
+    where TProjector : class
 {
-    private bool _stopping;
     private StreamSubscription? _subscription;
-    private readonly ProjectorService<TProjector> _projectorService = projectorService;
 
-    public async Task Initialize(CancellationToken cancellationToken) => await projectorService.Start(cancellationToken);
-
-    public async Task Subscribe(CancellationToken cancellationToken)
+    public override async Task Subscribe(CancellationToken cancellationToken)
     {
-        if (_stopping)
+        if (Stopping)
             return;
         
-        var eventNames = projectorService.EventNames;
+        var eventNames = ProjectorService.EventNames;
         var filter = new SubscriptionFilterOptions(EventTypeFilter.Prefix(eventNames));
-        var subscribePosition = projectorService.Position;
+        var subscribePosition = ProjectorService.Position;
 
         var position = subscribePosition is null
             ? FromAll.Start
@@ -36,24 +32,18 @@ internal class EventStoreProjectionSubscription<TProjector>(
                 EventAppeared,
                 false,
                 (_, reason, exception) =>
-                    SubscriptionDropped(reason, projectorService.ProjectionName, exception, cancellationToken),
+                    SubscriptionDropped(reason, ProjectorService.ProjectionName, exception, cancellationToken),
                 filter,
                 cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
         
-        logger.LogInformation("Subscribed to all stream from position: {position} for projection {projectionName}", position, _projectorService.ProjectionName);
+        logger.LogInformation("Subscribed to all stream from position: {position} for projection {projectionName}", position, ProjectorService.ProjectionName);
     }
 
-    public async Task UpdateProjections(CancellationToken cancellationToken) =>
-        await _projectorService
-            .UpdateProjections(cancellationToken)
-            .ConfigureAwait(false);
-
-    public async Task Stop(CancellationToken cancellationToken)
+    public override async Task Stop(CancellationToken cancellationToken)
     {
-        _stopping = true;
-        await _projectorService
+        await base
             .Stop(cancellationToken)
             .ConfigureAwait(false);
         _subscription?.Dispose();
@@ -102,7 +92,7 @@ internal class EventStoreProjectionSubscription<TProjector>(
                 break;
         }
         
-        if (_stopping)
+        if (Stopping)
             return;
             
         logger.LogInformation("Resubscribing ...");
@@ -116,16 +106,25 @@ internal class EventStoreProjectionSubscription<TProjector>(
         ResolvedEvent resolvedEvent, 
         CancellationToken cancellationToken)
     {
-        if (_stopping)
+        if (Stopping)
             return;
 
-        await _projectorService
+        var @event = new ProjectoR.Core.EventData(
+            resolvedEvent.Event.EventType,
+            resolvedEvent.Event.Data.ToArray(),
+            (long)resolvedEvent.Event.Position.CommitPosition
+        );
+        
+        logger.LogTrace(
+            "Event appeared for subscription for projection: {projectionName}, eventName: {eventName} position: {position}",
+            ProjectorService.ProjectionName,
+            @event.EventName,
+            @event.Position
+        );
+
+        await ProjectorService
             .EventAppeared(
-                new ProjectoR.Core.EventData(
-                    resolvedEvent.Event.EventType,
-                    resolvedEvent.Event.Data.ToArray(),
-                    (long)resolvedEvent.Event.Position.CommitPosition
-                ),
+                @event,
                 cancellationToken
             )
             .ConfigureAwait(false);

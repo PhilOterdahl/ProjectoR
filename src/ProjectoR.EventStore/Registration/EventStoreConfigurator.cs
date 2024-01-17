@@ -12,7 +12,7 @@ public interface IEventStoreConfigurator
 {
     IEventStoreConfigurator UseEventStoreCheckpointing();
 
-    IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
+    IEventStoreConfigurator UseSubscription<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
 }
 
 internal class EventStoreConfigurator : IEventStoreConfigurator
@@ -34,7 +34,7 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
         return this;
     }
     
-    public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
+    public IEventStoreConfigurator UseSubscription<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
         var configurator = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
 

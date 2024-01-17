@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectoR.Examples.EventStore.Data;
+namespace ProjectoR.Examples.Common.Data;
 
 public class AmountOfUsersPerCityProjectionConfiguration : IEntityTypeConfiguration<AmountOfUserPerCityProjection>
 {

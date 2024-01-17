@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjectoR.Examples.EventStore.Data;
+using ProjectoR.Examples.Common;
 
 #nullable disable
 
 namespace ProjectoR.Examples.EventStore.Migrations
 {
-    [DbContext(typeof(UserContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20231229154742_Add_checkpoints")]
     partial class Add_checkpoints
     {

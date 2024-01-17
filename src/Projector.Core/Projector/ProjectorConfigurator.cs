@@ -43,28 +43,6 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
         
         if (projectorInfo.HasBatchPostProcessor)
             projectoRConfigurator.RegisterBatchPostProcessor<TProjector>(projectorInfo);
-        
-        RegisterProjectorDependencies(projectoRConfigurator, projectorInfo);
-    }
-
-    private static IProjectoRConfigurator RegisterProjectorDependencies(IProjectoRConfigurator configurator, ProjectorInfo projectorInfo)
-    {
-        var services = configurator.Services;
-
-        services
-            .AddKeyedSingleton(projectorInfo.ProjectionName, projectorInfo.Options)
-            .AddScoped<TProjector>()
-            .AddScoped<ProjectorMethodInvoker<TProjector>>(provider =>
-                new ProjectorMethodInvoker<TProjector>(projectorInfo, provider)
-            )
-            .AddSingleton<ProjectorService<TProjector>>(serviceProvider =>
-                new ProjectorService<TProjector>(serviceProvider, projectorInfo)
-            )
-            .AddKeyedSingleton<IProjectorService>(
-                projectorInfo.ProjectionName,
-                (provider, _) => provider.GetRequiredService<ProjectorService<TProjector>>()
-            );
-        return configurator;
     }
 
     private static bool TryRegisteringProjector(IProjectoRConfigurator projectoRConfigurator, ProjectorInfo projectorInfo)
@@ -77,5 +55,21 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
         if (configuredProjectors.RegisterProjector(projectorInfo))
             return false;
         
+        projectoRConfigurator
+            .Services
+            .AddKeyedSingleton(projectorInfo.ProjectionName, projectorInfo.Options)
+            .AddScoped<TProjector>()
+            .AddScoped<ProjectorMethodInvoker<TProjector>>(provider =>
+                new ProjectorMethodInvoker<TProjector>(projectorInfo, provider)
+            )
+            .AddSingleton<ProjectorService<TProjector>>(serviceProvider =>
+                new ProjectorService<TProjector>(serviceProvider, projectorInfo)
+            )
+            .AddKeyedSingleton<IProjectorService>(
+                projectorInfo.ProjectionName,
+                (provider, _) => provider.GetRequiredService<ProjectorService<TProjector>>()
+            );
+
+        return true;
     }
 }

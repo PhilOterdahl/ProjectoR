@@ -1,4 +1,4 @@
-namespace ProjectoR.Examples.EventStore.Data;
+namespace ProjectoR.Examples.Common;
 
 public class AmountOfUserPerCityProjection
 {

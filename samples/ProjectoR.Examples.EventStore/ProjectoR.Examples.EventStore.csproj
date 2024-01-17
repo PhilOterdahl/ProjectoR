@@ -11,6 +11,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj" />
       <ProjectReference Include="..\..\src\ProjectoR.EventStore\ProjectoR.EventStore.csproj" />
+      <ProjectReference Include="..\..\src\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,10 +26,6 @@
       <None Update="appsettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

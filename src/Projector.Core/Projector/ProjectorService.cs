@@ -10,10 +10,16 @@ using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
 
-internal interface IProjectorService
+public interface IProjectorService
 {
     public bool Stopped { get; }
+    public long? Position { get; }
+    public string[] EventNames { get; }
     public string ProjectionName { get; }
+    Task Start(CancellationToken cancellationToken);
+    Task Stop(CancellationToken cancellationToken);
+    Task UpdateProjections(CancellationToken cancellationToken);
+    Task EventAppeared(EventData eventData, CancellationToken cancellationToken);
     Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken);
 }
 

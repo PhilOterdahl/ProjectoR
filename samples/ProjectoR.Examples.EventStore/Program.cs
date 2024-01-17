@@ -7,8 +7,8 @@ using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
 using ProjectoR.EntityFrameworkCore.Registration;
 using ProjectoR.EventStore.Registration;
+using ProjectoR.Examples.Common;
 using ProjectoR.Examples.EventStore;
-using ProjectoR.Examples.EventStore.Data;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -16,7 +16,7 @@ builder.Configuration.AddJsonFile("appsettings.json");
 builder
     .Services
     .AddLogging(loggingBuilder => loggingBuilder.AddConsole())
-    .AddDbContext<UserContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("UserContext")))
+    .AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("UserContext")))
     .AddProjectoR(configurator =>
     {
         configurator
@@ -25,7 +25,7 @@ builder
                 eventStoreConfigurator =>
                 {
                     eventStoreConfigurator
-                        .UseProjector<UserProjector>(configure =>
+                        .UseSubscription<UserProjector>(configure =>
                         {
                             configure.Priority = ProjectorPriority.Highest;
                             configure.BatchingOptions.BatchSize = 100;
@@ -35,7 +35,7 @@ builder
                                 .UseClassNameEventTypeResolver()
                                 .UseSnakeCaseEventNaming();
                         })
-                        .UseProjector<AmountOfUsersInCitiesProjector>(configure =>
+                        .UseSubscription<AmountOfUsersInCitiesProjector>(configure =>
                         {
                             configure.Priority = ProjectorPriority.Normal;
                             configure.BatchingOptions.BatchSize = 100;
@@ -45,7 +45,7 @@ builder
                                 .UseClassNameEventTypeResolver()
                                 .UseSnakeCaseEventNaming();
                         })
-                        .UseProjector<AmountOfUsersInCountryProjector>(configure =>
+                        .UseSubscription<AmountOfUsersInCountryProjector>(configure =>
                         {
                             configure.Priority = ProjectorPriority.Lowest;
                             configure.BatchingOptions.BatchSize = 100;
@@ -57,13 +57,13 @@ builder
                         });
                 }
             )
-            .UseEntityFramework(frameworkConfigurator => frameworkConfigurator.UseEntityFrameworkCheckpointing<UserContext>());
+            .UseEntityFramework(frameworkConfigurator => frameworkConfigurator.UseEntityFrameworkCheckpointing<ApplicationContext>());
     });
 
 var userContext = builder
     .Services
     .BuildServiceProvider()
-    .GetRequiredService<UserContext>();
+    .GetRequiredService<ApplicationContext>();
 
 userContext.Database.Migrate();
 

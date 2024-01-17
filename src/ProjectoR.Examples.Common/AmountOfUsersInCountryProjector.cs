@@ -1,21 +1,21 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using ProjectoR.Examples.EventStore.Data;
+using ProjectoR.Examples.EventStore;
 
-namespace ProjectoR.Examples.EventStore;
+namespace ProjectoR.Examples.Common;
 
 public class AmountOfUsersInCountryProjector
 {
     public static string ProjectionName => "AmountOfUsersPerCountry";
     
     public static async Task<IDbContextTransaction> PreProcess(
-        UserContext context,
+        ApplicationContext context,
         CancellationToken cancellationToken) =>
         await context.Database.BeginTransactionAsync(IsolationLevel.ReadUncommitted, cancellationToken);
 
     public static async Task PostProcess(
-        UserContext context,
+        ApplicationContext context,
         IDbContextTransaction transaction,
         CancellationToken cancellationToken)
     {
@@ -26,7 +26,7 @@ public class AmountOfUsersInCountryProjector
     public static async Task Project(
         User.Enrolled enrolled, 
         IDbContextTransaction transaction,
-        UserContext context,
+        ApplicationContext context,
         CancellationToken cancellationToken)
     {
         var projectionExists = await context

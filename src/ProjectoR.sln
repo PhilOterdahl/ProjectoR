@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{053DC9BE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Tests", "..\tests\ProjectoR.Tests\ProjectoR.Tests.csproj", "{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.CustomSubscription", "..\samples\ProjectoR.Examples.CustomSubscription\ProjectoR.Examples.CustomSubscription.csproj", "{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.Common", "ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj", "{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,9 +44,19 @@ Global
 		{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB} = {877A07AC-BF0D-4A0F-A919-679BF850BAD5}
 		{FB90C8E6-CCD0-49F6-B8AD-AC3488258482} = {053DC9BE-DE19-4C88-8F29-9B06F5668B19}
+		{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5} = {877A07AC-BF0D-4A0F-A919-679BF850BAD5}
+		{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD} = {877A07AC-BF0D-4A0F-A919-679BF850BAD5}
 	EndGlobalSection
 EndGlobal
