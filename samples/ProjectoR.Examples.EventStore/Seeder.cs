@@ -3,10 +3,11 @@ using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core.TypeResolvers;
 using ProjectoR.Examples.Common;
+using ProjectoR.Examples.Common.Projectors;
 
 namespace ProjectoR.Examples.EventStore;
 
-public static class UserSeeder
+public static class Seeder
 {
     public static async Task Seed(
         int seedAmount,
@@ -99,10 +100,15 @@ public static class UserSeeder
                 ))
                 .Chunk(2000);
 
-            await Parallel.ForEachAsync(
-                chunks, 
-                stoppingToken,
-                async (data, token) => await eventStoreClient.AppendToStreamAsync("test-stream", StreamState.Any, data, cancellationToken: stoppingToken)
-            );
+
+            foreach (var data in chunks)
+            {
+                await eventStoreClient.AppendToStreamAsync(
+                    "test-stream", 
+                    StreamState.Any, 
+                    data,
+                    cancellationToken: stoppingToken
+                );
+            }
     }
 }

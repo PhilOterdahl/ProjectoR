@@ -13,13 +13,27 @@ public class EventRecordConfiguration : IEntityTypeConfiguration<EventRecord>
 
         builder
             .Property(@event => @event.Position)
+            .UseIdentityAlwaysColumn()
             .ValueGeneratedOnAdd();
 
         builder
-            .Property(@event => @event.Name)
+            .Property(@event => @event.EventName)
             .IsRequired();
-
-        builder.HasIndex(@event => @event.Name);
-        builder.HasIndex(@event => @event.Position);
+        
+        builder
+            .Property(@event => @event.StreamName)
+            .IsRequired();
+        
+        builder
+            .Property(@event => @event.Created)
+            .HasDefaultValueSql("now()");
+        
+        builder.HasIndex(@event => @event.EventName);
+        builder.HasIndex(@event => @event.StreamName);
+        
+        builder
+            .HasIndex(@event => @event.Position)
+            .IsUnique()
+            .IsDescending();
     }
 }

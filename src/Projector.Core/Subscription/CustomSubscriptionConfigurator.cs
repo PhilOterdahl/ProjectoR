@@ -16,15 +16,18 @@ public class CustomSubscriptionConfigurator<TSubscription, TProjector>
         projectoRConfigurator
             .Services
             .AddSingleton<TSubscription>()
-            .AddSingleton<CustomSubscriptionWrapper>()
             .AddKeyedSingleton(configurator.ProjectionName, subscriptionInfo)
-            .AddKeyedSingleton<SubscribeMethodInvoker>(configurator.ProjectionName, (provider, _) => new SubscribeMethodInvoker(subscriptionInfo, provider))
+            .AddKeyedSingleton<CustomSubscriptionWrapper>(configurator.ProjectionName,
+                (provider, _) => new CustomSubscriptionWrapper(subscriptionInfo, provider))
             .AddKeyedSingleton<IProjectionSubscription>(
                 configurator.ProjectionName,
-                (provider, _) => provider.GetRequiredService<CustomSubscriptionWrapper>()
+                (provider, _) => provider.GetRequiredKeyedService<CustomSubscriptionWrapper>(configurator.ProjectionName)
             )
             .AddSingleton<IProjectionSubscription>(provider =>
-                provider.GetRequiredService<CustomSubscriptionWrapper>()
+                provider.GetRequiredKeyedService<CustomSubscriptionWrapper>(configurator.ProjectionName)
+            )
+            .AddKeyedSingleton<SubscribeMethodInvoker>(configurator.ProjectionName,
+                (provider, _) => new SubscribeMethodInvoker(subscriptionInfo, provider)
             );
     }
 }

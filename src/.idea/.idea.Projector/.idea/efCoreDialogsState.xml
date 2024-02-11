@@ -3,9 +3,10 @@
   <component name="EfCoreDialogsState">
     <option name="keyValueStorage">
       <map>
+        <entry key="Common:42ca5b3f-4320-4543-bad6-ed3ee4bb09b5:dbContext" value="ProjectoR.Examples.CustomSubscription.Data.ApplicationContext" />
         <entry key="Common:buildConfiguration" value="Debug" />
-        <entry key="Common:dd37adff-541d-4f11-ae4d-4df1849dbefb:dbContext" value="ProjectoR.Examples.EventStore.Data.UserContext" />
-        <entry key="Common:enableDiagnosticLogging" value="false" />
+        <entry key="Common:dd37adff-541d-4f11-ae4d-4df1849dbefb:dbContext" value="ProjectoR.Examples.EventStore.ApplicationContext" />
+        <entry key="Common:enableDiagnosticLogging" value="true" />
         <entry key="Common:noBuild" value="false" />
         <entry key="Common:outputFolder" value="Migrations" />
       </map>

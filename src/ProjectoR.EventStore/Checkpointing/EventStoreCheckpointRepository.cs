@@ -37,7 +37,7 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
     {
         var @event = new EventData(
             Uuid.NewUuid(),
-            "Checkpoint",
+            nameof(Checkpoint).ToLower(),
             JsonSerializer.SerializeToUtf8Bytes((CheckpointState)checkpoint)
         );
         
@@ -46,11 +46,12 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
 
         try
         {
+            
             // store new checkpoint expecting stream to exist
             await eventStoreClient
                 .AppendToStreamAsync(
                     streamName,
-                    StreamState.Any,
+                    StreamState.NoStream,
                     eventToAppend,
                     cancellationToken: cancellationToken
                 )
@@ -69,7 +70,7 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
                     cancellationToken: cancellationToken
                 )
                 .ConfigureAwait(false);
-
+        
             // append event again expecting stream to not exist
             await eventStoreClient
                 .AppendToStreamAsync(
@@ -80,6 +81,16 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
                 )
                 .ConfigureAwait(false);
         }
+        catch (Exception e)
+        {
+            var test = e;
+        }
+        finally
+        {
+            var test = eventStoreClient;
+        }
+
+        var tes2 = "test";
     }
     
     private static string GetCheckpointStreamName(string projectionName) => $"checkpoint_{projectionName.Underscore()}";

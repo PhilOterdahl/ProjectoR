@@ -52,7 +52,7 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
             .BuildServiceProvider()
             .GetRequiredService<ConfiguredProjectors>();
 
-        if (configuredProjectors.RegisterProjector(projectorInfo))
+        if (!configuredProjectors.RegisterProjector(projectorInfo))
             return false;
         
         projectoRConfigurator

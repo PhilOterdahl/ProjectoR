@@ -28,7 +28,7 @@ internal sealed class BatchPostProcessorInfo
     public BatchPostProcessorInfo(Type handlerType, MethodInfo methodInfo)
     {
         if (!ValidReturnTypes.Contains(methodInfo.ReturnType))
-            throw new InvalidOperationException($"Post batch processed handler method: {methodInfo.Name} needs to return one of the following valid return types: void, task or valueTask");
+            throw new InvalidOperationException($"Batch post processor method: {methodInfo.Name} needs to return one of the following valid return types: void, task or valueTask");
         
         HandlerType = handlerType ?? throw new ArgumentNullException(nameof(handlerType));
         MethodInfo = methodInfo ?? throw new ArgumentNullException(nameof(methodInfo));

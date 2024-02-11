@@ -1,21 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using ProjectoR.Core.Checkpointing;
-using ProjectoR.EntityFrameworkCore.Checkpointing;
 using ProjectoR.Examples.Common;
+using ProjectoR.Examples.Common.Data;
 
 namespace ProjectoR.Examples.EventStore;
 
-public abstract class ApplicationContext(DbContextOptions options) : DbContext(options), ICheckpointingContext
+public class ApplicationContext(DbContextOptions<ApplicationContext> options) : DbContext(options), ISampleContext
 {
     public DbSet<UserProjection> UsersProjections { get; set; }
     public DbSet<AmountOfUserPerCityProjection> AmountOfUsersPerCityProjections { get; set; }
     public DbSet<AmountOfUsersPerCountryProjection> AmountOfUsersPerCountryProjections { get; set; }
-    public DbSet<CheckpointState> Checkpoints { get; set; }
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .ApplyConfigurationsFromAssembly(typeof(ApplicationContext).Assembly)
-            .ApplyConfiguration(new CheckpointStateConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ISampleContext).Assembly);
     }
 }

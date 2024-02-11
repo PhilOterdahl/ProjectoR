@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:alpine3.18
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/data/postgres
+    networks:
+      - projector-samples-custom-subscription
+  
+volumes:
+  postgres:
+
+networks:
+  projector-samples-custom-subscription:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.12.1/22
+    

@@ -13,11 +13,11 @@ services:
     volumes:
       - postgres:/data/postgres
     networks:
-      - projector
+      - projector-samples-eventstore
   
   eventstore.db:
     container_name: EventStore
-    image: eventstore/eventstore:22.10.1-buster-slim
+    image: eventstore/eventstore:22.10.3-buster-slim
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
@@ -38,7 +38,7 @@ services:
         source: eventstore-volume-logs
         target: /var/log/eventstore
     networks:
-      - projector
+      -  projector-samples-eventstore
         
 volumes:
   postgres:
@@ -46,7 +46,7 @@ volumes:
   eventstore-volume-logs:
 
 networks:
-  projector:
+  projector-samples-eventstore:
     ipam:
       driver: default
       config:

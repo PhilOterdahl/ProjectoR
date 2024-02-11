@@ -1,8 +1,8 @@
-namespace ProjectoR.Examples.Common;
+namespace ProjectoR.Examples.Common.Data;
 
 public class UserProjection
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public ContactInformation ContactInformation { get; set; }

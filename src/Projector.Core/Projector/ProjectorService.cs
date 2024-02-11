@@ -204,15 +204,16 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
                 cancellationToken
             )
             .ConfigureAwait(false);
-        
+    
         if (checkpointingOptions.Strategy == CheckpointingStrategy.AfterBatch)
             await SaveCheckpoint(checkpointRepository, lastEventPosition, cancellationToken)
                 .ConfigureAwait(false);
-            
+        
         if (batchPostProcessor is not null)
             await batchPostProcessor
                 .Invoke(dependency, cancellationToken)
                 .ConfigureAwait(false);
+        
     }
 
     private async Task<long> ProjectEvents(
@@ -281,11 +282,7 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
         _eventsProcessedSinceCheckpoint = 0;
     }
     
-    private IEventTypeResolver GetEventTypeResolver(IServiceProvider serviceProvider)
-    {
-        var serializationOptions = _projectorInfo.Options.SerializationOptions;
-        return serviceProvider.GetRequiredKeyedService<IEventTypeResolver>(ProjectionName);
-    }
+    private IEventTypeResolver GetEventTypeResolver(IServiceProvider serviceProvider) => serviceProvider.GetRequiredKeyedService<IEventTypeResolver>(ProjectionName);
 
     public async ValueTask DisposeAsync() => await _timer.DisposeAsync();
 }

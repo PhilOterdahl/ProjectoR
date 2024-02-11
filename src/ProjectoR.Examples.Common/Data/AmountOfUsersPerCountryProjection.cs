@@ -1,4 +1,4 @@
-namespace ProjectoR.Examples.Common;
+namespace ProjectoR.Examples.Common.Data;
 
 public class AmountOfUsersPerCountryProjection
 {

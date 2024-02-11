@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjectoR.Examples.Common;
+using ProjectoR.Examples.CustomSubscription.Data;
 
 #nullable disable
 
-namespace ProjectoR.Examples.EventStore.Migrations
+namespace ProjectoR.Examples.CustomSubscription.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20231229154742_Add_checkpoints")]
-    partial class Add_checkpoints
+    [Migration("20240122141224_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,33 @@ namespace ProjectoR.Examples.EventStore.Migrations
                     b.ToTable("Checkpoint", "ProjectoR");
                 });
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStore.Data.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.Common.AmountOfUserPerCityProjection", b =>
+                {
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("City");
+
+                    b.ToTable("AmountOfUsersPerCity", "Projection");
+                });
+
+            modelBuilder.Entity("ProjectoR.Examples.Common.AmountOfUsersPerCountryProjection", b =>
+                {
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CountryCode");
+
+                    b.ToTable("AmountOfUsersPerCountry", "Projection");
+                });
+
+            modelBuilder.Entity("ProjectoR.Examples.Common.UserProjection", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -57,14 +83,60 @@ namespace ProjectoR.Examples.EventStore.Migrations
                     b.ToTable("User", "Projection");
                 });
 
-            modelBuilder.Entity("ProjectoR.Examples.EventStore.Data.UserProjection", b =>
+            modelBuilder.Entity("ProjectoR.Examples.CustomSubscription.Data.EventRecord", b =>
                 {
-                    b.OwnsOne("ProjectoR.Examples.EventStore.Data.Address", "Address", b1 =>
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Position")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Position"));
+
+                    b.Property<string>("StreamName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventName");
+
+                    b.HasIndex("Position")
+                        .IsUnique()
+                        .IsDescending();
+
+                    b.HasIndex("StreamName");
+
+                    b.ToTable("Event", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectoR.Examples.Common.UserProjection", b =>
+                {
+                    b.OwnsOne("ProjectoR.Examples.Common.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("CountryCode")
                                 .IsRequired()
                                 .HasColumnType("text");
 
@@ -84,7 +156,7 @@ namespace ProjectoR.Examples.EventStore.Migrations
                                 .HasForeignKey("UserProjectionId");
                         });
 
-                    b.OwnsOne("ProjectoR.Examples.EventStore.Data.ContactInformation", "ContactInformation", b1 =>
+                    b.OwnsOne("ProjectoR.Examples.Common.ContactInformation", "ContactInformation", b1 =>
                         {
                             b1.Property<Guid>("UserProjectionId")
                                 .HasColumnType("uuid");

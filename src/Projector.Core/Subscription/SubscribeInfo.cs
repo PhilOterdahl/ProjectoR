@@ -13,20 +13,21 @@ public class SubscribeInfo
     public bool IsStatic { get; }
 
     private static readonly Type[] ValidReturnTypes = {
-        typeof(void),
-        typeof(ValueTask),
-        typeof(Task),
+        typeof(IEnumerable<EventData>),
+        typeof(IAsyncEnumerable<EventData>),
     };
     
     public SubscribeInfo(Type subscriptionType, MethodInfo methodInfo)
     {
         if (!ValidReturnTypes.Contains(methodInfo.ReturnType))
-            throw new InvalidOperationException($"Post batch processed handler method: {methodInfo.Name} needs to return one of the following valid return types: void, task or valueTask");
+            throw new InvalidOperationException("Subscribe method needs to return one of the following valid return types: IEnumerable<EventData> or IAsyncEnumerable<EventData>");
         
         SubscriptionType = subscriptionType ?? throw new ArgumentNullException(nameof(subscriptionType));
         MethodInfo = methodInfo ?? throw new ArgumentNullException(nameof(methodInfo));
-        IsAsync = methodInfo.ReturnType.IsAwaitable();
+        IsAsync = IsAwaitable(methodInfo.ReturnType);
         IsStatic = methodInfo.IsStatic;
         ReturnType = methodInfo.ReturnType;
     }
+    
+    private static bool IsAwaitable(Type returnType) => returnType == typeof(IAsyncEnumerable<EventData>);
 }

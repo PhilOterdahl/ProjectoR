@@ -5,9 +5,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
-using ProjectoR.EntityFrameworkCore.Registration;
 using ProjectoR.EventStore.Registration;
 using ProjectoR.Examples.Common;
+using ProjectoR.Examples.Common.Data;
+using ProjectoR.Examples.Common.Projectors;
 using ProjectoR.Examples.EventStore;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -16,7 +17,8 @@ builder.Configuration.AddJsonFile("appsettings.json");
 builder
     .Services
     .AddLogging(loggingBuilder => loggingBuilder.AddConsole())
-    .AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("UserContext")))
+    .AddDbContextPool<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext")))
+    .AddScoped<ISampleContext>(provider => provider.GetRequiredService<ApplicationContext>())
     .AddProjectoR(configurator =>
     {
         configurator
@@ -25,16 +27,17 @@ builder
                 eventStoreConfigurator =>
                 {
                     eventStoreConfigurator
-                        .UseSubscription<UserProjector>(configure =>
-                        {
-                            configure.Priority = ProjectorPriority.Highest;
-                            configure.BatchingOptions.BatchSize = 100;
-                            configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
-                            configure.CheckpointingOptions.CheckpointAfterBatch();
-                            configure.SerializationOptions
-                                .UseClassNameEventTypeResolver()
-                                .UseSnakeCaseEventNaming();
-                        })
+                        .UseEventStoreCheckpointing()
+                        // .UseSubscription<UserProjector>(configure =>
+                        // {
+                        //     configure.Priority = ProjectorPriority.Highest;
+                        //     configure.BatchingOptions.BatchSize = 100;
+                        //     configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
+                        //     configure.CheckpointingOptions.CheckpointAfterBatch();
+                        //     configure.SerializationOptions
+                        //         .UseClassNameEventTypeResolver()
+                        //         .UseSnakeCaseEventNaming();
+                        // });
                         .UseSubscription<AmountOfUsersInCitiesProjector>(configure =>
                         {
                             configure.Priority = ProjectorPriority.Normal;
@@ -44,20 +47,19 @@ builder
                             configure.SerializationOptions
                                 .UseClassNameEventTypeResolver()
                                 .UseSnakeCaseEventNaming();
-                        })
-                        .UseSubscription<AmountOfUsersInCountryProjector>(configure =>
-                        {
-                            configure.Priority = ProjectorPriority.Lowest;
-                            configure.BatchingOptions.BatchSize = 100;
-                            configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
-                            configure.CheckpointingOptions.CheckpointAfterBatch();
-                            configure.SerializationOptions
-                                .UseClassNameEventTypeResolver()
-                                .UseSnakeCaseEventNaming();
                         });
+                    // .UseSubscription<AmountOfUsersInCountryProjector>(configure =>
+                    // {
+                    //     configure.Priority = ProjectorPriority.Lowest;
+                    //     configure.BatchingOptions.BatchSize = 100;
+                    //     configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
+                    //     configure.CheckpointingOptions.CheckpointAfterBatch();
+                    //     configure.SerializationOptions
+                    //         .UseClassNameEventTypeResolver()
+                    //         .UseSnakeCaseEventNaming();
+                    // });
                 }
-            )
-            .UseEntityFramework(frameworkConfigurator => frameworkConfigurator.UseEntityFrameworkCheckpointing<ApplicationContext>());
+            );
     });
 
 var userContext = builder
@@ -68,6 +70,6 @@ var userContext = builder
 userContext.Database.Migrate();
 
 var app = builder.Build();
-await UserSeeder.Seed(10000, app.Services);
+await Seeder.Seed(1000, app.Services);
 
 app.Run();

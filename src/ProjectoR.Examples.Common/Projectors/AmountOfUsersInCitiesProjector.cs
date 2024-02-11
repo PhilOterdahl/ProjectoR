@@ -1,21 +1,23 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using ProjectoR.Examples.EventStore;
+using ProjectoR.Examples.Common.Data;
+using ProjectoR.Examples.Common.Domain;
+using ProjectoR.Examples.Common.Domain.User;
 
-namespace ProjectoR.Examples.Common;
+namespace ProjectoR.Examples.Common.Projectors;
 
-public class AmountOfUsersInCountryProjector
+public class AmountOfUsersInCitiesProjector
 {
-    public static string ProjectionName => "AmountOfUsersPerCountry";
+    public static string ProjectionName => "AmountOfUsersPerCity";
     
     public static async Task<IDbContextTransaction> PreProcess(
-        ApplicationContext context,
+        ISampleContext context,
         CancellationToken cancellationToken) =>
         await context.Database.BeginTransactionAsync(IsolationLevel.ReadUncommitted, cancellationToken);
 
     public static async Task PostProcess(
-        ApplicationContext context,
+        ISampleContext context,
         IDbContextTransaction transaction,
         CancellationToken cancellationToken)
     {
@@ -24,27 +26,27 @@ public class AmountOfUsersInCountryProjector
     }
     
     public static async Task Project(
-        User.Enrolled enrolled, 
+        UserWasEnrolled enrolled, 
         IDbContextTransaction transaction,
-        ApplicationContext context,
+        ISampleContext context,
         CancellationToken cancellationToken)
     {
         var projectionExists = await context
-            .AmountOfUsersPerCountryProjections
-            .AnyAsync(projection => projection.CountryCode == enrolled.CountryCode, cancellationToken: cancellationToken);
+            .AmountOfUsersPerCityProjections
+            .AnyAsync(projection => projection.City == enrolled.City, cancellationToken: cancellationToken);
 
         if (projectionExists)
         {
             await context
-                .AmountOfUsersPerCountryProjections
-                .Where(projection => projection.CountryCode == enrolled.CountryCode)
+                .AmountOfUsersPerCityProjections
+                .Where(projection => projection.City == enrolled.City)
                 .ExecuteUpdateAsync(calls => calls.SetProperty(projection => projection.Amount, projection => projection.Amount + 1), cancellationToken: cancellationToken);
             return;
         }
         
-        context.AmountOfUsersPerCountryProjections.Add(new AmountOfUsersPerCountryProjection
+        context.AmountOfUsersPerCityProjections.Add(new AmountOfUserPerCityProjection
         {
-            CountryCode = enrolled.CountryCode,
+            City = enrolled.City,
             Amount = 1
         });
 

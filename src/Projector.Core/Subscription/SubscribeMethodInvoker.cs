@@ -71,9 +71,9 @@ internal sealed class SubscribeMethodInvoker(CustomSubscriptionInfo subscription
         {
             if (parameterInfo.ParameterType == typeof(CancellationToken))
                 parameters[parameterInfo.Position] = cancellationToken;
-            else if (parameterInfo.ParameterType == typeof(long) && parameterInfo.Name == "checkPoint")
+            else if (parameterInfo.ParameterType == typeof(long?))
                 parameters[parameterInfo.Position] = checkpoint;
-            else if (parameterInfo.ParameterType == typeof(string[]) && parameterInfo.Name == "eventNames")
+            else if (parameterInfo.ParameterType == typeof(string[]))
                 parameters[parameterInfo.Position] = eventNames;
             else
             {
