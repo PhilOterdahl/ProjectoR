@@ -6,9 +6,9 @@ namespace ProjectoR.Examples.EventStore;
 
 public class ApplicationContext(DbContextOptions<ApplicationContext> options) : DbContext(options), ISampleContext
 {
-    public DbSet<UserProjection> UsersProjections { get; set; }
-    public DbSet<AmountOfUserPerCityProjection> AmountOfUsersPerCityProjections { get; set; }
-    public DbSet<AmountOfUsersPerCountryProjection> AmountOfUsersPerCountryProjections { get; set; }
+    public DbSet<StudentProjection> Students { get; set; }
+    public DbSet<AmountOfStudentsPerCityProjection> AmountOfStudentsPerCity { get; set; }
+    public DbSet<AmountOfStudentsPerCountryProjection> AmountOfStudentsPerCountry { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
-using ProjectoR.EventStore.Registration;
+using Projector.EventStore.Registration;
 using ProjectoR.Examples.Common;
 using ProjectoR.Examples.Common.Data;
 using ProjectoR.Examples.Common.Projectors;
@@ -38,7 +38,7 @@ builder
                         //         .UseClassNameEventTypeResolver()
                         //         .UseSnakeCaseEventNaming();
                         // });
-                        .UseSubscription<AmountOfUsersInCitiesProjector>(configure =>
+                        .UseSubscription<AmountOfStudentsPerCityProjector>(configure =>
                         {
                             configure.Priority = ProjectorPriority.Normal;
                             configure.BatchingOptions.BatchSize = 100;
@@ -70,6 +70,5 @@ var userContext = builder
 userContext.Database.Migrate();
 
 var app = builder.Build();
-await Seeder.Seed(1000, app.Services);
 
 app.Run();

@@ -2,7 +2,7 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjectoR.Examples.Common.Data;
-using ProjectoR.Examples.Common.Domain.User;
+using ProjectoR.Examples.Common.Domain.Student;
 
 namespace ProjectoR.Examples.Common.Projectors;
 
@@ -25,12 +25,12 @@ public class UserProjector
     }
 
     public static async Task Project(
-        UserWasEnrolled enrolled, 
+        StudentWasEnrolled enrolled, 
         IDbContextTransaction transaction,
         ISampleContext context, 
         CancellationToken cancellationToken)
     {
-        context.UsersProjections.Add(new UserProjection
+        context.Students.Add(new StudentProjection
         {
             Id = enrolled.Id,
             FirstName = enrolled.FirstName,
@@ -52,20 +52,20 @@ public class UserProjector
         await context.SaveChangesAsync(cancellationToken);
     }
     
-    public async Task Project(UserMoved moved, ISampleContext context, CancellationToken cancellationToken) =>
+    public async Task Project(StudentRelocated relocated, ISampleContext context, CancellationToken cancellationToken) =>
         await context
-            .UsersProjections
-            .Where(user => user.Id == moved.Id)
+            .Students
+            .Where(user => user.Id == relocated.Id)
             .ExecuteUpdateAsync(calls => calls
-                    .SetProperty(projection => projection.Address.City, moved.City)
-                    .SetProperty(projection => projection.Address.PostalCode, moved.PostalCode)
-                    .SetProperty(projection => projection.Address.Street, moved.Street),
+                    .SetProperty(projection => projection.Address.City, relocated.City)
+                    .SetProperty(projection => projection.Address.PostalCode, relocated.PostalCode)
+                    .SetProperty(projection => projection.Address.Street, relocated.Street),
                 cancellationToken
             );
 
-    public async Task Project(UserChangedContactInformation changedContactInformation, ISampleContext context, CancellationToken cancellationToken) =>
+    public async Task Project(StudentChangedContactInformation changedContactInformation, ISampleContext context, CancellationToken cancellationToken) =>
         await context
-            .UsersProjections
+            .Students
             .Where(user => user.Id == changedContactInformation.Id)
             .ExecuteUpdateAsync(calls => calls
                     .SetProperty(projection => projection.ContactInformation.Email, changedContactInformation.Email)
@@ -73,9 +73,9 @@ public class UserProjector
                 cancellationToken
             );
 
-    public async Task Project(UserQuit userQuit, ISampleContext context, CancellationToken cancellationToken) =>
+    public async Task Project(StudentGraduated studentGraduated, ISampleContext context, CancellationToken cancellationToken) =>
         await context
-            .UsersProjections
-            .Where(user => user.Id == userQuit.Id)
+            .Students
+            .Where(user => user.Id == studentGraduated.Id)
             .ExecuteDeleteAsync(cancellationToken);
 }

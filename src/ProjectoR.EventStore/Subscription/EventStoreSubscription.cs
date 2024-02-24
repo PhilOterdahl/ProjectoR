@@ -2,13 +2,13 @@ using EventStore.Client;
 using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 
-namespace ProjectoR.EventStore.Subscription;
+namespace Projector.EventStore.Subscription;
 
 internal sealed class EventStoreProjectionSubscription<TProjector>(
     EventStoreClient eventStoreClient,
     ProjectorService<TProjector> projectorService,
     ILogger<EventStoreProjectionSubscription<TProjector>> logger)
-    : Core.Subscription.Subscription(projectorService)
+    : ProjectoR.Core.Subscription.Subscription(projectorService)
     where TProjector : class
 {
     private StreamSubscription? _subscription;

@@ -1,6 +1,6 @@
 using ProjectoR.Core.Registration;
 
-namespace ProjectoR.EventStore.Registration;
+namespace Projector.EventStore.Registration;
 
 public static class EventStoreRegistration
 {

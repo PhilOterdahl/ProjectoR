@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core;
 using ProjectoR.Examples.CustomSubscription.Data;
 

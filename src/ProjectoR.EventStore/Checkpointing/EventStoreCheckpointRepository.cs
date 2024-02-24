@@ -3,7 +3,7 @@ using EventStore.Client;
 using Humanizer;
 using ProjectoR.Core.Checkpointing;
 
-namespace ProjectoR.EventStore.Checkpointing;
+namespace Projector.EventStore.Checkpointing;
 
 internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient) : ICheckpointRepository
 {

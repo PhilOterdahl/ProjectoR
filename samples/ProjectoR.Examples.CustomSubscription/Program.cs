@@ -1,25 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
 using ProjectoR.EntityFrameworkCore.Registration;
-using ProjectoR.Examples.Common;
 using ProjectoR.Examples.Common.Data;
+using ProjectoR.Examples.Common.Processes;
 using ProjectoR.Examples.Common.Projectors;
 using ProjectoR.Examples.CustomSubscription;
 using ProjectoR.Examples.CustomSubscription.Data;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json");
 builder
     .Services
+    .AddEndpointsApiExplorer()
+    .AddOpenApiDocument()
+    .AddStudentProcesses()
     .AddLogging(loggingBuilder => loggingBuilder.AddConsole())
     .AddDbContextPool<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext")))
     .AddScoped<ISampleContext>(provider => provider.GetRequiredService<ApplicationContext>())
+    .AddScoped<IStudentRepository, StudentRepository>()
     .AddProjectoR(configurator =>
     {
         configurator
@@ -33,7 +33,7 @@ builder
                     .UseClassNameEventTypeResolver()
                     .UseSnakeCaseEventNaming();
             })
-            .UseCustomSubscription<CustomSubscription, AmountOfUsersInCitiesProjector>(configure =>
+            .UseCustomSubscription<CustomSubscription, AmountOfStudentsPerCityProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Normal;
                 configure.BatchingOptions.BatchSize = 100;
@@ -43,7 +43,7 @@ builder
                     .UseClassNameEventTypeResolver()
                     .UseSnakeCaseEventNaming();
             })
-            .UseCustomSubscription<CustomSubscription, AmountOfUsersInCountryProjector>(configure =>
+            .UseCustomSubscription<CustomSubscription, AmountOfStudentsPerCountryProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Lowest;
                 configure.BatchingOptions.BatchSize = 100;
@@ -64,5 +64,15 @@ var dbContext = builder
 dbContext.Database.Migrate();
 
 var app = builder.Build();
-await Seeder.Seed(100, app.Services);
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStudentEndpoints();
 app.Run();

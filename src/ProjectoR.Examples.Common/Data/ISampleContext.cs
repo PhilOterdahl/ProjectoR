@@ -5,9 +5,9 @@ namespace ProjectoR.Examples.Common.Data;
 
 public interface ISampleContext
 {
-    public DbSet<UserProjection> UsersProjections { get; set; }
-    public DbSet<AmountOfUserPerCityProjection> AmountOfUsersPerCityProjections { get; set; }
-    public DbSet<AmountOfUsersPerCountryProjection> AmountOfUsersPerCountryProjections { get; set; }
+    public DbSet<StudentProjection> Students { get; set; }
+    public DbSet<AmountOfStudentsPerCityProjection> AmountOfStudentsPerCity { get; set; }
+    public DbSet<AmountOfStudentsPerCountryProjection> AmountOfStudentsPerCountry { get; set; }
     
     public DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -3,10 +3,10 @@ using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
 using ProjectoR.Core.Subscription;
-using ProjectoR.EventStore.Checkpointing;
-using ProjectoR.EventStore.Subscription;
+using Projector.EventStore.Checkpointing;
+using Projector.EventStore.Subscription;
 
-namespace ProjectoR.EventStore.Registration;
+namespace Projector.EventStore.Registration;
 
 public interface IEventStoreConfigurator
 {
