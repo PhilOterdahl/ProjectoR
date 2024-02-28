@@ -11,7 +11,8 @@ internal static class MetricsRegistration
             .Services
             .AddKeyedSingleton<ProjectorMetrics>(projectorInfo.ProjectionName)
             .AddKeyedSingleton<IProjectorMetrics>(projectorInfo.ProjectionName,
-                (provider, _) => provider.GetRequiredKeyedService<ProjectorMetrics>(projectorInfo.ProjectionName));
+                (provider, _) => provider.GetRequiredKeyedService<ProjectorMetrics>(projectorInfo.ProjectionName)
+            );
 
         return configurator;
     }

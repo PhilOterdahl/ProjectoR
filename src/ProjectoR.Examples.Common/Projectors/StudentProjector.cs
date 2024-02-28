@@ -6,7 +6,7 @@ using ProjectoR.Examples.Common.Domain.Student.Events;
 
 namespace ProjectoR.Examples.Common.Projectors;
 
-public class UserProjector
+public class StudentProjector
 {
     public static string ProjectionName => "Student";
     

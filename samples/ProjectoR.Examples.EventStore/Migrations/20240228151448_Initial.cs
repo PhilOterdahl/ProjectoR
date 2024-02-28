@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -15,7 +14,7 @@ namespace ProjectoR.Examples.EventStore.Migrations
                 name: "Projection");
 
             migrationBuilder.CreateTable(
-                name: "AmountOfUsersPerCity",
+                name: "AmountOfStudentsPerCity",
                 schema: "Projection",
                 columns: table => new
                 {
@@ -24,11 +23,11 @@ namespace ProjectoR.Examples.EventStore.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AmountOfUsersPerCity", x => x.City);
+                    table.PrimaryKey("PK_AmountOfStudentsPerCity", x => x.City);
                 });
 
             migrationBuilder.CreateTable(
-                name: "AmountOfUsersPerCountry",
+                name: "AmountOfStudentsPerCountry",
                 schema: "Projection",
                 columns: table => new
                 {
@@ -37,15 +36,15 @@ namespace ProjectoR.Examples.EventStore.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AmountOfUsersPerCountry", x => x.CountryCode);
+                    table.PrimaryKey("PK_AmountOfStudentsPerCountry", x => x.CountryCode);
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "Student",
                 schema: "Projection",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     ContactInformation_Email = table.Column<string>(type: "text", nullable: false),
@@ -57,7 +56,7 @@ namespace ProjectoR.Examples.EventStore.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.Id);
+                    table.PrimaryKey("PK_Student", x => x.Id);
                 });
         }
 
@@ -65,15 +64,15 @@ namespace ProjectoR.Examples.EventStore.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AmountOfUsersPerCity",
+                name: "AmountOfStudentsPerCity",
                 schema: "Projection");
 
             migrationBuilder.DropTable(
-                name: "AmountOfUsersPerCountry",
+                name: "AmountOfStudentsPerCountry",
                 schema: "Projection");
 
             migrationBuilder.DropTable(
-                name: "User",
+                name: "Student",
                 schema: "Projection");
         }
     }

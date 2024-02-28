@@ -25,7 +25,7 @@ builder
     {
         configurator.SerializationOptions.UseCustomEventTypeResolver<EventTypeResolver>();
         configurator
-            .UseCustomSubscription<EfCoreSubscription, UserProjector>(configure =>
+            .UseCustomSubscription<EfCoreSubscription, StudentProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Highest;
                 configure.BatchingOptions.BatchSize = 100;

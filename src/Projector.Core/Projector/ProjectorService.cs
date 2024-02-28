@@ -127,7 +127,9 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
                     if (Stopped)
                         return;
 
-                    await _projectorWorkQueue.Enqueue(ProjectionName, new[] { @event }, _projectorInfo.Options.Priority, cancellationToken);
+                    await _projectorWorkQueue
+                        .Enqueue(ProjectionName, new[] { @event }, _projectorInfo.Options.Priority, cancellationToken)
+                        .ConfigureAwait(false);
                 })
                 .ConfigureAwait(false);
         }

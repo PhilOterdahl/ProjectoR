@@ -46,12 +46,11 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
 
         try
         {
-            
             // store new checkpoint expecting stream to exist
             await eventStoreClient
                 .AppendToStreamAsync(
                     streamName,
-                    StreamState.NoStream,
+                    StreamState.StreamExists,
                     eventToAppend,
                     cancellationToken: cancellationToken
                 )
@@ -81,16 +80,6 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
                 )
                 .ConfigureAwait(false);
         }
-        catch (Exception e)
-        {
-            var test = e;
-        }
-        finally
-        {
-            var test = eventStoreClient;
-        }
-
-        var tes2 = "test";
     }
     
     private static string GetCheckpointStreamName(string projectionName) => $"checkpoint_{projectionName.Underscore()}";

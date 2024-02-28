@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ProjectoR.Examples.Common;
 using ProjectoR.Examples.Common.Data;
 
-namespace ProjectoR.Examples.EventStore;
+namespace ProjectoR.Examples.EventStore.Data;
 
 public class ApplicationContext(DbContextOptions<ApplicationContext> options) : DbContext(options), ISampleContext
 {
