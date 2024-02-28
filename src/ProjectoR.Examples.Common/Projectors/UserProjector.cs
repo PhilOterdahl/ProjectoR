@@ -2,13 +2,13 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjectoR.Examples.Common.Data;
-using ProjectoR.Examples.Common.Domain.Student;
+using ProjectoR.Examples.Common.Domain.Student.Events;
 
 namespace ProjectoR.Examples.Common.Projectors;
 
 public class UserProjector
 {
-    public static string ProjectionName => "User";
+    public static string ProjectionName => "Student";
     
     public static async Task<IDbContextTransaction> PreProcess(
         ISampleContext context,
@@ -57,9 +57,9 @@ public class UserProjector
             .Students
             .Where(user => user.Id == relocated.Id)
             .ExecuteUpdateAsync(calls => calls
-                    .SetProperty(projection => projection.Address.City, relocated.City)
-                    .SetProperty(projection => projection.Address.PostalCode, relocated.PostalCode)
-                    .SetProperty(projection => projection.Address.Street, relocated.Street),
+                    .SetProperty(projection => projection.Address.City, relocated.NewAddress.City)
+                    .SetProperty(projection => projection.Address.PostalCode, relocated.NewAddress.PostalCode)
+                    .SetProperty(projection => projection.Address.Street, relocated.NewAddress.Street),
                 cancellationToken
             );
 

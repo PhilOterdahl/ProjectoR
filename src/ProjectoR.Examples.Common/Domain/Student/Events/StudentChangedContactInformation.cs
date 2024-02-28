@@ -1,4 +1,4 @@
-namespace ProjectoR.Examples.Common.Domain.Student;
+namespace ProjectoR.Examples.Common.Domain.Student.Events;
 
 public record StudentChangedContactInformation(
     string Id,

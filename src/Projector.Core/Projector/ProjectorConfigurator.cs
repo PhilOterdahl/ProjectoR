@@ -34,7 +34,7 @@ internal sealed class ProjectorConfigurator<TProjector> where TProjector : class
             throw new ProjectionNameNotUniqueException(ProjectionName);
 
         projectoRConfigurator
-            .RegisterEventNameFormatter(projectorInfo)
+            .RegisterEventTypeResolver(projectorInfo)
             .RegisterProjectorMetrics(projectorInfo)
             .RegisterCheckpointing(projectorInfo);
         

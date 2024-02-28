@@ -2,6 +2,7 @@
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Registration;
 using ProjectoR.EntityFrameworkCore.Registration;
+using ProjectoR.Examples.Common;
 using ProjectoR.Examples.Common.Data;
 using ProjectoR.Examples.Common.Processes;
 using ProjectoR.Examples.Common.Projectors;
@@ -22,36 +23,28 @@ builder
     .AddScoped<IStudentRepository, StudentRepository>()
     .AddProjectoR(configurator =>
     {
+        configurator.SerializationOptions.UseCustomEventTypeResolver<EventTypeResolver>();
         configurator
-            .UseCustomSubscription<CustomSubscription, UserProjector>(configure =>
+            .UseCustomSubscription<EfCoreSubscription, UserProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Highest;
                 configure.BatchingOptions.BatchSize = 100;
                 configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
                 configure.CheckpointingOptions.CheckpointAfterBatch();
-                configure.SerializationOptions
-                    .UseClassNameEventTypeResolver()
-                    .UseSnakeCaseEventNaming();
             })
-            .UseCustomSubscription<CustomSubscription, AmountOfStudentsPerCityProjector>(configure =>
+            .UseCustomSubscription<EfCoreSubscription, AmountOfStudentsPerCityProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Normal;
                 configure.BatchingOptions.BatchSize = 100;
                 configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
                 configure.CheckpointingOptions.CheckpointAfterBatch();
-                configure.SerializationOptions
-                    .UseClassNameEventTypeResolver()
-                    .UseSnakeCaseEventNaming();
             })
-            .UseCustomSubscription<CustomSubscription, AmountOfStudentsPerCountryProjector>(configure =>
+            .UseCustomSubscription<EfCoreSubscription, AmountOfStudentsPerCountryProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Lowest;
                 configure.BatchingOptions.BatchSize = 100;
                 configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
                 configure.CheckpointingOptions.CheckpointAfterBatch();
-                configure.SerializationOptions
-                    .UseClassNameEventTypeResolver()
-                    .UseSnakeCaseEventNaming();
             })
             .UseEntityFramework(frameworkConfigurator => frameworkConfigurator.UseEntityFrameworkCheckpointing<ApplicationContext>());
     });

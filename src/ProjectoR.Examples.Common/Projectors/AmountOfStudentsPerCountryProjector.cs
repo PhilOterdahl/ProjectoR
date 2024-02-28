@@ -2,8 +2,7 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjectoR.Examples.Common.Data;
-using ProjectoR.Examples.Common.Domain;
-using ProjectoR.Examples.Common.Domain.Student;
+using ProjectoR.Examples.Common.Domain.Student.Events;
 
 namespace ProjectoR.Examples.Common.Projectors;
 
@@ -27,7 +26,6 @@ public class AmountOfStudentsPerCountryProjector
     
     public static async Task Project(
         StudentWasEnrolled enrolled, 
-        IDbContextTransaction transaction,
         ISampleContext context,
         CancellationToken cancellationToken)
     {
@@ -47,6 +45,40 @@ public class AmountOfStudentsPerCountryProjector
         context.AmountOfStudentsPerCountry.Add(new AmountOfStudentsPerCountryProjection
         {
             CountryCode = enrolled.CountryCode,
+            Amount = 1
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+    
+    public static async Task Project(
+        StudentRelocated relocated, 
+        ISampleContext context,
+        CancellationToken cancellationToken)
+    {
+        // decrease amount for previous city
+        await context
+            .AmountOfStudentsPerCountry
+            .Where(projection => projection.CountryCode == relocated.OldAddress.CountryCode)
+            .ExecuteUpdateAsync(calls => calls.SetProperty(projection => projection.Amount, projection => projection.Amount - 1), cancellationToken: cancellationToken);
+        
+        // increase amount for new city
+        var projectionExists = await context
+            .AmountOfStudentsPerCountry
+            .AnyAsync(projection => projection.CountryCode == relocated.NewAddress.CountryCode, cancellationToken: cancellationToken);
+
+        if (projectionExists)
+        {
+            await context
+                .AmountOfStudentsPerCountry
+                .Where(projection => projection.CountryCode == relocated.NewAddress.CountryCode)
+                .ExecuteUpdateAsync(calls => calls.SetProperty(projection => projection.Amount, projection => projection.Amount + 1), cancellationToken: cancellationToken);
+            return;
+        }
+        
+        context.AmountOfStudentsPerCountry.Add(new AmountOfStudentsPerCountryProjection
+        {
+            CountryCode = relocated.NewAddress.CountryCode,
             Amount = 1
         });
 

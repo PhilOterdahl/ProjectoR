@@ -48,7 +48,7 @@ public class StudentRepository(ApplicationContext dbContext, IEventTypeResolver 
             {
                 StreamName = streamName,
                 Id = Guid.NewGuid(),
-                EventName = eventTypeResolver.GetName(@events.GetType()),
+                EventName = eventTypeResolver.GetName(@event.GetType()),
                 Data = JsonSerializer.SerializeToUtf8Bytes(@event)
             })
             .ToArray();

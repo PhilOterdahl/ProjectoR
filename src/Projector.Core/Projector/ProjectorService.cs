@@ -51,12 +51,17 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
         _metrics = serviceProvider.GetRequiredKeyedService<ProjectorMetrics>(projectorInfo.ProjectionName);
         _projectorInfo = projectorInfo;
         ProjectionName = projectorInfo.ProjectionName;
-        var eventTypeResolver = serviceProvider.GetRequiredKeyedService<IEventTypeResolver>(ProjectionName);
-        EventNames = EventTypes
-            .Select(eventType => eventTypeResolver.GetName(eventType))
-            .ToArray();
-        _timer = new Timer(MeasureEventsProcessed, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
         
+        // In case custom eventTypeResolver is needed to be scope we need to create a scope to use it.
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var eventTypeResolver = GetEventTypeResolver(scope);
+            EventNames = EventTypes
+                .Select(eventType => eventTypeResolver.GetName(eventType))
+                .ToArray();
+        }
+        
+        _timer = new Timer(MeasureEventsProcessed, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
         _eventChannel = Channel.CreateBounded<EventData>(
             new BoundedChannelOptions(Math.Max(_projectorInfo.Options.BatchingOptions.BatchSize*10, 100))
             {
@@ -131,7 +136,7 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
     public async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
-        var eventTypeResolver = scope.ServiceProvider.GetRequiredKeyedService<IEventTypeResolver>(ProjectionName);
+        var eventTypeResolver = GetEventTypeResolver(scope);
         var batchPreProcessor = scope.ServiceProvider.GetService<BatchPreProcessor<TProjector>>();
         var events = eventData
             .Select(@event => new { @event.Data, type = eventTypeResolver.GetType(@event.EventName), @event.Position })
@@ -184,7 +189,12 @@ internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDi
                 return;
         }
     }
-    
+
+    private IEventTypeResolver? GetEventTypeResolver(IServiceScope scope) => 
+        scope
+            .ServiceProvider
+            .GetKeyedService<IEventTypeResolver>(ProjectionName) ?? scope.ServiceProvider.GetService<IEventTypeResolver>();
+
     private async Task Project(
         IServiceProvider provider,
         object? dependency, 

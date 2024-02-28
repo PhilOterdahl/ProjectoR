@@ -8,7 +8,7 @@ namespace ProjectoR.Core.Projector.Serialization;
 
 internal static class SerializationRegistration
 {
-    public static IProjectoRConfigurator RegisterEventNameFormatter(this IProjectoRConfigurator projectoRConfigurator, ProjectorInfo projectorInfo) =>
+    public static IProjectoRConfigurator RegisterEventTypeResolver(this IProjectoRConfigurator projectoRConfigurator, ProjectorInfo projectorInfo) =>
         projectorInfo.Options.SerializationOptions.EventTypeResolver switch
         {
             EventTypeResolverType.Namespace => RegisterNameSpaceEventTypeResolver(
@@ -36,8 +36,10 @@ internal static class SerializationRegistration
         IProjectoRConfigurator configurator,
         ProjectorInfo projectorInfo)
     {
-        var resolver = new NameSpaceEventTypeResolver(GetEventNameFormatter(projectorInfo.Options.SerializationOptions.Casing));
-        resolver.SetEventTypes(projectorInfo.EventTypes);
+        var resolver = new NameSpaceEventTypeResolver(
+            GetEventNameFormatter(projectorInfo.Options.SerializationOptions.Casing),
+            projectorInfo.EventTypes
+        );
         configurator.Services.AddKeyedSingleton<IEventTypeResolver>(projectorInfo.ProjectionName, resolver);
         return configurator;
     }
@@ -46,8 +48,10 @@ internal static class SerializationRegistration
         IProjectoRConfigurator configurator, 
         ProjectorInfo projectorInfo)
     {
-        var resolver = new ClassNameEventTypeResolver(GetEventNameFormatter(projectorInfo.Options.SerializationOptions.Casing));
-        resolver.SetEventTypes(projectorInfo.EventTypes);
+        var resolver = new ClassNameEventTypeResolver(
+            GetEventNameFormatter(projectorInfo.Options.SerializationOptions.Casing), 
+            projectorInfo.EventTypes
+        );
         configurator.Services.AddKeyedSingleton<IEventTypeResolver>(projectorInfo.ProjectionName, resolver);
         return configurator;
     }

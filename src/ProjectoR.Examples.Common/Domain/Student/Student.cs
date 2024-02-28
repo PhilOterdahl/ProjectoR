@@ -1,3 +1,5 @@
+using ProjectoR.Examples.Common.Domain.Student.Events;
+
 namespace ProjectoR.Examples.Common.Domain.Student;
 
 public class Student : Aggregate<StudentState>
@@ -53,8 +55,11 @@ public class Student : Aggregate<StudentState>
     {
         if (State.GraduationDate.HasValue)
             throw new InvalidOperationException("Can not modify a user that has quit");
+
+        var oldAddress = new AddressState(State.CountryCode, State.City, State.PostalCode, State.Street);
+        var newAddress = new AddressState(countryCode, city, postalCode, street);
         
-        var studentRelocated = new StudentRelocated(State.Id, countryCode, city, postalCode, street);
+        var studentRelocated = new StudentRelocated(State.Id, oldAddress, newAddress);
         
         AddEvent(studentRelocated);
         return this;
@@ -102,10 +107,10 @@ public class Student : Aggregate<StudentState>
             },
             StudentRelocated studentRelocated => currentState with
             {
-                City = studentRelocated.City,
-                PostalCode = studentRelocated.PostalCode,
-                Street = studentRelocated.Street,
-                CountryCode = studentRelocated.CountryCode
+                City = studentRelocated.NewAddress.City,
+                PostalCode = studentRelocated.NewAddress.PostalCode,
+                Street = studentRelocated.NewAddress.Street,
+                CountryCode = studentRelocated.NewAddress.CountryCode
             },
             StudentChangedContactInformation studentChangedContactInformation => currentState with
             {

@@ -18,7 +18,8 @@ public class CustomSubscriptionConfigurator<TSubscription, TProjector>
             .AddSingleton<TSubscription>()
             .AddKeyedSingleton(configurator.ProjectionName, subscriptionInfo)
             .AddKeyedSingleton<CustomSubscriptionWrapper>(configurator.ProjectionName,
-                (provider, _) => new CustomSubscriptionWrapper(subscriptionInfo, provider))
+                (provider, _) => new CustomSubscriptionWrapper(subscriptionInfo, provider)
+            )
             .AddKeyedSingleton<IProjectionSubscription>(
                 configurator.ProjectionName,
                 (provider, _) => provider.GetRequiredKeyedService<CustomSubscriptionWrapper>(configurator.ProjectionName)

@@ -5,7 +5,7 @@ using ProjectoR.Examples.CustomSubscription.Data;
 
 namespace ProjectoR.Examples.CustomSubscription;
 
-public class CustomSubscription
+public class EfCoreSubscription
 {
     private const int BatchSize = 100;
     private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(1);
