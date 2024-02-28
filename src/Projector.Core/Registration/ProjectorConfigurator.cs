@@ -2,21 +2,59 @@ using Microsoft.Extensions.DependencyInjection;
 using ProjectoR.Core.Projector;
 using ProjectoR.Core.Projector.Serialization;
 using ProjectoR.Core.Subscription;
-using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Registration;
 
-public class ProjectoRConfigurator
+public interface IProjectoRConfigurator
 {
-    public IServiceCollection Services { get; }
+    int MaxConcurrency { get; set; }
+    ProjectorSerializationOptions SerializationOptions { get; }
+    IServiceCollection Services { get; }
 
-    public ProjectorSerializationOptions SerializationOptions { get; private set; } = new();
-    
+    IProjectoRConfigurator UseCustomSubscription<TSubscription, TProjector>(Action<ProjectorOptions>? configure = null)
+        where TSubscription : class
+        where TProjector : class;
+}
+
+public class ProjectoRConfigurator : IProjectoRConfigurator
+{
     public ProjectoRConfigurator(IServiceCollection services)
     {
         Services = services
-            .AddSingleton<EventTypeResolverProvider>()
-            .AddHostedService<SubscriptionWorker>();
-        services.AddSingleton(new ConfiguredProjectors());
+            .AddHostedService<SubscriptionWorker>()
+            .AddSingleton<ProjectorWorkQueue>()
+            .AddHostedService<ProjectorWorkQueue>(provider => provider.GetRequiredService<ProjectorWorkQueue>())
+            .AddSingleton(new ConfiguredProjectors());
+    }
+
+    public int MaxConcurrency { get; set; } = -1;
+    public IServiceCollection Services { get; }
+
+    public IProjectoRConfigurator UseCustomSubscription<TSubscription, TProjector>(
+        Action<ProjectorOptions>? configure = null)
+        where TSubscription : class
+        where TProjector : class
+    {
+        _ = new CustomSubscriptionConfigurator<TSubscription, TProjector>(this, configure);
+        
+        return this;
+    }
+
+    public ProjectorSerializationOptions SerializationOptions { get; } = new();
+
+    public void Build()
+    {
+        var amountOfProjectors = Services
+            .BuildServiceProvider()
+            .GetRequiredService<ConfiguredProjectors>()
+            .Count;
+        
+        var options = new ProjectorROptions
+        {
+            MaxConcurrency = MaxConcurrency < 0 
+                ? amountOfProjectors
+                : MaxConcurrency,
+        };
+        Services.AddSingleton(options);
     }
 }

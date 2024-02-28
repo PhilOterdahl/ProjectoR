@@ -2,18 +2,20 @@ using ProjectoR.Core.EventNameFormatters;
 
 namespace ProjectoR.Core.TypeResolvers;
 
-internal class NameSpaceEventTypeResolver(IEventNameFormatter formatter) : IEventTypeResolver
+internal class NameSpaceEventTypeResolver : IEventTypeResolver
 {
     private Dictionary<string, Type> _eventTypes;
+    private readonly IEventNameFormatter _formatter;
 
-    public void SetEventTypes(IEnumerable<Type> eventTypes)
+    public NameSpaceEventTypeResolver(IEventNameFormatter formatter, IEnumerable<Type> eventTypes)
     {
-        _eventTypes = eventTypes.ToDictionary(type => formatter.Format(type.FullName));
+        _formatter = formatter;
+        _eventTypes = eventTypes.ToDictionary(GetName);
     }
 
     public Type GetType(string eventName)
     {
-        var name = formatter.Format(eventName);
+        var name = _formatter.Format(eventName);
         return _eventTypes.TryGetValue(name, out var type)
             ? type
             : throw new InvalidOperationException($"Type for event with name: {name} was not found");
@@ -21,6 +23,6 @@ internal class NameSpaceEventTypeResolver(IEventNameFormatter formatter) : IEven
 
     public string GetName(Type eventType)
     {
-        return formatter.Format(eventType.FullName);
+        return _formatter.Format(eventType.FullName);
     }
 }

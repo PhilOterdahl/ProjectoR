@@ -11,7 +11,7 @@ public interface IEntityFrameworkConfigurator
     IEntityFrameworkConfigurator UseEntityFrameworkCheckpointing<TDbContext>() where TDbContext : DbContext, ICheckpointingContext;
 }
 
-internal class EntityFrameworkConfigurator(ProjectoRConfigurator projectoRConfigurator) : IEntityFrameworkConfigurator
+internal class EntityFrameworkConfigurator(IProjectoRConfigurator projectoRConfigurator) : IEntityFrameworkConfigurator
 {
     public IEntityFrameworkConfigurator UseEntityFrameworkCheckpointing<TDbContext>() where TDbContext : DbContext, ICheckpointingContext
     {

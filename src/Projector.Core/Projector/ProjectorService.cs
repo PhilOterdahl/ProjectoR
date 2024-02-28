@@ -5,38 +5,65 @@ using Open.ChannelExtensions;
 using ProjectoR.Core.Checkpointing;
 using ProjectoR.Core.Projector.Batching;
 using ProjectoR.Core.Projector.Checkpointing;
+using ProjectoR.Core.Projector.Metrics;
 using ProjectoR.Core.TypeResolvers;
 
 namespace ProjectoR.Core.Projector;
 
-internal sealed class ProjectorService<TProjector>
+public interface IProjectorService
 {
-    private readonly ProjectorOptions _options;
+    public bool Stopped { get; }
+    public long? Position { get; }
+    public string[] EventNames { get; }
+    public string ProjectionName { get; }
+    Task Start(CancellationToken cancellationToken);
+    Task Stop(CancellationToken cancellationToken);
+    Task UpdateProjections(CancellationToken cancellationToken);
+    Task EventAppeared(EventData eventData, CancellationToken cancellationToken);
+    Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken);
+}
+
+internal sealed class ProjectorService<TProjector> : IProjectorService, IAsyncDisposable
+{
     private readonly ProjectorCheckpointCache _checkpointCache;
     private readonly ProjectorInfo _projectorInfo;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ProjectorWorkQueue _projectorWorkQueue;
     private readonly Channel<EventData> _eventChannel;
-    private bool _stopping;
+    private readonly Timer _timer;
+    private readonly ProjectorMetrics _metrics;
+    
     private int _eventsProcessedSinceCheckpoint;
+    private int _totalEventsProcessed;
+    private int _eventsProcessedLastMinute;
     private Type[] EventTypes => _projectorInfo.EventTypes;
     
     public long? Position => _checkpointCache.Checkpoint?.Position;
     public string[] EventNames { get; }
     public string ProjectionName { get; }
+    public bool Stopped { get; private set; }
     
     public ProjectorService(IServiceProvider serviceProvider, ProjectorInfo projectorInfo)
     {
         _serviceProvider = serviceProvider;
-        _options = serviceProvider.GetRequiredKeyedService<ProjectorOptions>(projectorInfo.ProjectionName);
+        _projectorWorkQueue = serviceProvider.GetRequiredService<ProjectorWorkQueue>();
         _checkpointCache = serviceProvider.GetRequiredKeyedService<ProjectorCheckpointCache>(projectorInfo.ProjectionName);
+        _metrics = serviceProvider.GetRequiredKeyedService<ProjectorMetrics>(projectorInfo.ProjectionName);
         _projectorInfo = projectorInfo;
-        var eventTypeResolver = GetEventTypeResolver(serviceProvider);
-        EventNames = EventTypes
-            .Select(eventType => eventTypeResolver.GetName(eventType))
-            .ToArray();
         ProjectionName = projectorInfo.ProjectionName;
+        
+        // In case custom eventTypeResolver is needed to be scope we need to create a scope to use it.
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var eventTypeResolver = GetEventTypeResolver(scope);
+            EventNames = EventTypes
+                .Select(eventType => eventTypeResolver.GetName(eventType))
+                .ToArray();
+        }
+        
+        _timer = new Timer(MeasureEventsProcessed, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
         _eventChannel = Channel.CreateBounded<EventData>(
-            new BoundedChannelOptions(_options.BatchingOptions.BatchSize*10)
+            new BoundedChannelOptions(Math.Max(_projectorInfo.Options.BatchingOptions.BatchSize*10, 100))
             {
                 SingleReader = true,
                 SingleWriter = true,
@@ -62,7 +89,7 @@ internal sealed class ProjectorService<TProjector>
 
     public async Task EventAppeared(EventData eventData, CancellationToken cancellationToken)
     { 
-        if (_stopping)
+        if (Stopped)
             return;
         
         await _eventChannel
@@ -71,21 +98,47 @@ internal sealed class ProjectorService<TProjector>
             .ConfigureAwait(false);
     }
 
-    public async Task UpdateProjections(CancellationToken cancellationToken) =>
-        await _eventChannel
-            .Reader
-            .Batch(_options.BatchingOptions.BatchSize, true)
-            .WithTimeout(_options.BatchingOptions.BatchTimeout.Milliseconds)
-            .TaskReadAllAsync(cancellationToken, async batch => 
-                await Project(batch, cancellationToken)
-                    .ConfigureAwait(false)
-            )
-            .ConfigureAwait(false);
+    public async Task UpdateProjections(CancellationToken cancellationToken)
+    {
+        var batchingOptions = _projectorInfo.Options.BatchingOptions;
+        var shouldBatch = batchingOptions.BatchSize > 1;
+        
+        if (shouldBatch)
+        {
+            await _eventChannel
+                .Reader
+                .Batch(batchingOptions.BatchSize, true)
+                .WithTimeout(batchingOptions.BatchTimeout.Milliseconds)
+                .TaskReadAllAsync(cancellationToken, async batch =>
+                {
+                    if (Stopped)
+                        return;
+                    
+                    await _projectorWorkQueue.Enqueue(ProjectionName, batch, _projectorInfo.Options.Priority, cancellationToken);
+                })
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await _eventChannel
+                .Reader
+                .TaskReadAllAsync(cancellationToken, async @event =>
+                {
+                    if (Stopped)
+                        return;
 
-    private async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
+                    await _projectorWorkQueue
+                        .Enqueue(ProjectionName, new[] { @event }, _projectorInfo.Options.Priority, cancellationToken)
+                        .ConfigureAwait(false);
+                })
+                .ConfigureAwait(false);
+        }
+    }
+
+    public async Task Project(IEnumerable<EventData> eventData, CancellationToken cancellationToken)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
-        var eventTypeResolver = GetEventTypeResolver(scope.ServiceProvider);
+        var eventTypeResolver = GetEventTypeResolver(scope);
         var batchPreProcessor = scope.ServiceProvider.GetService<BatchPreProcessor<TProjector>>();
         var events = eventData
             .Select(@event => new { @event.Data, type = eventTypeResolver.GetType(@event.EventName), @event.Position })
@@ -138,14 +191,19 @@ internal sealed class ProjectorService<TProjector>
                 return;
         }
     }
-    
+
+    private IEventTypeResolver? GetEventTypeResolver(IServiceScope scope) => 
+        scope
+            .ServiceProvider
+            .GetKeyedService<IEventTypeResolver>(ProjectionName) ?? scope.ServiceProvider.GetService<IEventTypeResolver>();
+
     private async Task Project(
         IServiceProvider provider,
         object? dependency, 
         IEnumerable<(object, Type, long)> events,
         CancellationToken cancellationToken)
     {
-        var checkpointingOptions = _options.CheckpointingOptions;
+        var checkpointingOptions = _projectorInfo.Options.CheckpointingOptions;
         var projectorMethodInvoker = provider.GetRequiredService<ProjectorMethodInvoker<TProjector>>();
         var batchPostProcessor = provider.GetService<BatchPostProcessor<TProjector>>();
         var checkpointRepository = provider.GetRequiredService<ICheckpointRepository>();
@@ -158,15 +216,16 @@ internal sealed class ProjectorService<TProjector>
                 cancellationToken
             )
             .ConfigureAwait(false);
-        
+    
         if (checkpointingOptions.Strategy == CheckpointingStrategy.AfterBatch)
             await SaveCheckpoint(checkpointRepository, lastEventPosition, cancellationToken)
                 .ConfigureAwait(false);
-            
+        
         if (batchPostProcessor is not null)
             await batchPostProcessor
                 .Invoke(dependency, cancellationToken)
                 .ConfigureAwait(false);
+        
     }
 
     private async Task<long> ProjectEvents(
@@ -187,6 +246,8 @@ internal sealed class ProjectorService<TProjector>
                 .ConfigureAwait(false);
             
             _eventsProcessedSinceCheckpoint++;
+            _totalEventsProcessed++;
+            Interlocked.Increment(ref _eventsProcessedLastMinute);
             
             switch (checkpointingOptions.Strategy)
             {
@@ -205,10 +266,19 @@ internal sealed class ProjectorService<TProjector>
 
     public async Task Stop(CancellationToken cancellationToken)
     {
-        _stopping = true;
+        _timer.Change(Timeout.Infinite, 0);
+        Stopped = true;
         await _eventChannel
             .CompleteAsync()
             .ConfigureAwait(false);
+    }
+    
+    private void MeasureEventsProcessed(object? state)
+    {
+        _metrics.EventsPerMinute = _eventsProcessedLastMinute;
+        _metrics.EventsProcessedSinceStartedRunning = _totalEventsProcessed;
+        
+        Interlocked.Exchange(ref _eventsProcessedLastMinute, 0);
     }
 
     private async Task SaveCheckpoint(
@@ -224,14 +294,7 @@ internal sealed class ProjectorService<TProjector>
         _eventsProcessedSinceCheckpoint = 0;
     }
     
-    private IEventTypeResolver GetEventTypeResolver(IServiceProvider serviceProvider) =>
-        serviceProvider
-            .GetRequiredService<EventTypeResolverProvider>()
-            .GetEventTypeResolver(
-                ProjectionName,
-                _options.SerializationOptions.EventTypeResolver,
-                _options.SerializationOptions.Casing,
-                _options.SerializationOptions.CustomEventTypeResolverType,
-                EventTypes
-            );
+    private IEventTypeResolver GetEventTypeResolver(IServiceProvider serviceProvider) => serviceProvider.GetRequiredKeyedService<IEventTypeResolver>(ProjectionName);
+
+    public async ValueTask DisposeAsync() => await _timer.DisposeAsync();
 }

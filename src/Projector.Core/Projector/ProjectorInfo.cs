@@ -11,9 +11,10 @@ internal sealed class ProjectorInfo
     public BatchPostProcessorInfo? BatchPostProcessorInfo { get; }
     public bool HasBatchPreProcessor => BatchPreProcessorInfo is not null;
     public bool HasBatchPostProcessor => BatchPostProcessorInfo is not null;
-    
+    public ProjectorOptions Options { get; }
+
     private readonly Dictionary<Type, ProjectorHandlerInfo> _handlerInfo;
-    
+
     private static readonly string[] ValidMethods = {
         ProjectorHandlerInfo.Project,
         ProjectorHandlerInfo.Consume,
@@ -23,8 +24,9 @@ internal sealed class ProjectorInfo
         ProjectorHandlerInfo.When
     };
     
-    public ProjectorInfo(Type projectorType)
+    public ProjectorInfo(Type projectorType, ProjectorOptions options)
     {
+        Options = options;
         ProjectionName = GetProjectionName(projectorType);
         _handlerInfo = GetProjectorHandlerInfo(ProjectionName, projectorType);
         BatchPreProcessorInfo = GetPreBatchProcessedBehaviourInfo(projectorType);

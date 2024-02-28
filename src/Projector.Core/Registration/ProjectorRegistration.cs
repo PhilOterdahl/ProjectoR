@@ -6,10 +6,11 @@ public static class ProjectoRRegistration
 {
     public static IServiceCollection AddProjectoR(
         this IServiceCollection services,
-        Action<ProjectoRConfigurator> configure)
+        Action<IProjectoRConfigurator> configure)
     {
         var configurator = new ProjectoRConfigurator(services);
         configure(configurator);
+        configurator.Build();
 
         return services;
     }

@@ -37,7 +37,7 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
     {
         var @event = new EventData(
             Uuid.NewUuid(),
-            "Checkpoint",
+            nameof(Checkpoint).ToLower(),
             JsonSerializer.SerializeToUtf8Bytes((CheckpointState)checkpoint)
         );
         
@@ -50,7 +50,7 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
             await eventStoreClient
                 .AppendToStreamAsync(
                     streamName,
-                    StreamState.Any,
+                    StreamState.StreamExists,
                     eventToAppend,
                     cancellationToken: cancellationToken
                 )
@@ -69,7 +69,7 @@ internal class EventStoreCheckpointRepository(EventStoreClient eventStoreClient)
                     cancellationToken: cancellationToken
                 )
                 .ConfigureAwait(false);
-
+        
             // append event again expecting stream to not exist
             await eventStoreClient
                 .AppendToStreamAsync(

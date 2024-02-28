@@ -12,14 +12,14 @@ public interface IEventStoreConfigurator
 {
     IEventStoreConfigurator UseEventStoreCheckpointing();
 
-    IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
+    IEventStoreConfigurator UseSubscription<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class;
 }
 
 internal class EventStoreConfigurator : IEventStoreConfigurator
 {
-    private readonly ProjectoRConfigurator _projectoRConfigurator;
+    private readonly IProjectoRConfigurator _projectoRConfigurator;
 
-    public EventStoreConfigurator(ProjectoRConfigurator projectoRConfigurator, string connectionString)
+    public EventStoreConfigurator(IProjectoRConfigurator projectoRConfigurator, string connectionString)
     {
         _projectoRConfigurator = projectoRConfigurator;
         projectoRConfigurator.Services.AddEventStoreClient(connectionString);
@@ -34,13 +34,15 @@ internal class EventStoreConfigurator : IEventStoreConfigurator
         return this;
     }
     
-    public IEventStoreConfigurator UseProjector<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
+    public IEventStoreConfigurator UseSubscription<TProjector>(Action<ProjectorOptions>? configure = null) where TProjector : class
     {
-        _ = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
+        var configurator = new ProjectorConfigurator<TProjector>(_projectoRConfigurator, configure);
 
         _projectoRConfigurator
             .Services
-            .AddSingleton<IProjectionSubscription, EventStoreProjectionSubscription<TProjector>>();
+            .AddKeyedSingleton<IProjectionSubscription>(configurator.ProjectionName, (provider, _) => provider.GetRequiredService<EventStoreProjectionSubscription<TProjector>>())
+            .AddSingleton<IProjectionSubscription>(provider => provider.GetRequiredService<EventStoreProjectionSubscription<TProjector>>())
+            .AddSingleton<EventStoreProjectionSubscription<TProjector>>();
 
         return this;
     }
