@@ -24,22 +24,23 @@ builder
     .AddProjectoR(configurator =>
     {
         configurator.SerializationOptions.UseCustomEventTypeResolver<EventTypeResolver>();
+        configurator.UseInMemoryCheckpointing();
         configurator
-            .UseCustomSubscription<EfCoreSubscription, StudentProjector>(configure =>
+            .UseCustomSubscription<EntityFrameworkCoreSubscription, StudentProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Highest;
                 configure.BatchingOptions.BatchSize = 100;
                 configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
                 configure.CheckpointingOptions.CheckpointAfterBatch();
             })
-            .UseCustomSubscription<EfCoreSubscription, AmountOfStudentsPerCityProjector>(configure =>
+            .UseCustomSubscription<EntityFrameworkCoreSubscription, AmountOfStudentsPerCityProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Normal;
                 configure.BatchingOptions.BatchSize = 100;
                 configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
                 configure.CheckpointingOptions.CheckpointAfterBatch();
             })
-            .UseCustomSubscription<EfCoreSubscription, AmountOfStudentsPerCountryProjector>(configure =>
+            .UseCustomSubscription<EntityFrameworkCoreSubscription, AmountOfStudentsPerCountryProjector>(configure =>
             {
                 configure.Priority = ProjectorPriority.Lowest;
                 configure.BatchingOptions.BatchSize = 100;

@@ -63,7 +63,6 @@ public class AmountOfStudentsPerCityProjector
             .Where(projection => projection.City == relocated.OldAddress.City)
             .ExecuteUpdateAsync(calls => calls.SetProperty(projection => projection.Amount, projection => projection.Amount - 1), cancellationToken: cancellationToken);
         
-        
         // increase amount for new city
         var projectionExists = await context
             .AmountOfStudentsPerCity

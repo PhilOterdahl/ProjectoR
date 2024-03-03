@@ -50,6 +50,7 @@ public class StudentProjector
         });
 
         await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
     
     public async Task Project(StudentRelocated relocated, ISampleContext context, CancellationToken cancellationToken) =>

@@ -2,12 +2,9 @@ namespace ProjectoR.Core.Registration;
 
 public static class InMemoryRegistration
 {
-    public static ProjectoRConfigurator UseInMemory(
-        this ProjectoRConfigurator configurator,
-        Action<IInMemoryConfigurator> configure)
+    public static IProjectoRConfigurator UseInMemoryCheckpointing(this IProjectoRConfigurator configurator)
     {
-        var inMemoryConfigurator = new InMemoryConfigurator(configurator);
-        configure(inMemoryConfigurator);
+        var _ = new InMemoryConfigurator(configurator);
         return configurator;
     }
 }
