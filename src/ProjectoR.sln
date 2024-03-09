@@ -1,22 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Core", "ProjectoR.Core\ProjectoR.Core.csproj", "{771F512B-B982-4C6D-A228-6867844F895A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Core", "ProjectoR.Core/ProjectoR.Core.csproj", "{771F512B-B982-4C6D-A228-6867844F895A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EventStore", "ProjectoR.EventStore\ProjectoR.EventStore.csproj", "{E586C1D9-57BC-4103-B594-4984B1367502}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EventStore", "ProjectoR.EventStore/ProjectoR.EventStore.csproj", "{E586C1D9-57BC-4103-B594-4984B1367502}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{877A07AC-BF0D-4A0F-A919-679BF850BAD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.EventStore", "..\samples\ProjectoR.Examples.EventStore\ProjectoR.Examples.EventStore.csproj", "{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.EventStore", "../samples/ProjectoR.Examples.EventStore/ProjectoR.Examples.EventStore.csproj", "{DD37ADFF-541D-4F11-AE4D-4DF1849DBEFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EntityFrameworkCore", "ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj", "{20E07159-E79F-4601-A14C-45CD2875ED3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.EntityFrameworkCore", "ProjectoR.EntityFrameworkCore/ProjectoR.EntityFrameworkCore.csproj", "{20E07159-E79F-4601-A14C-45CD2875ED3F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{053DC9BE-DE19-4C88-8F29-9B06F5668B19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Tests", "..\tests\ProjectoR.Tests\ProjectoR.Tests.csproj", "{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Tests", "../tests/ProjectoR.Tests/ProjectoR.Tests.csproj", "{FB90C8E6-CCD0-49F6-B8AD-AC3488258482}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.CustomSubscription", "..\samples\ProjectoR.Examples.CustomSubscription\ProjectoR.Examples.CustomSubscription.csproj", "{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.CustomSubscription", "../samples/ProjectoR.Examples.CustomSubscription/ProjectoR.Examples.CustomSubscription.csproj", "{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.Common", "ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj", "{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.Common", "../samples/ProjectoR.Examples.Common/ProjectoR.Examples.Common.csproj", "{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventStore", "EventStore", "{6AFEA1EC-384C-4F72-B370-ECC37C31D291}"
 EndProject

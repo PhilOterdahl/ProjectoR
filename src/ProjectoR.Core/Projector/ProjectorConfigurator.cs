@@ -9,13 +9,13 @@ namespace ProjectoR.Core.Projector;
 
 internal class ConfiguredProjectors
 {
-    private readonly HashSet<ProjectorInfo> _projectorInformation = [];
+    private readonly Dictionary<string, ProjectorInfo> _projectorInformation = [];
 
     public int Count => _projectorInformation.Count;
     
-    public bool RegisterProjector(ProjectorInfo projectorInfo) => _projectorInformation.Add(projectorInfo);
+    public bool RegisterProjector(ProjectorInfo projectorInfo) => _projectorInformation.TryAdd(projectorInfo.ProjectionName,  projectorInfo);
 
-    public ProjectorInfo[] ProjectorInformation => _projectorInformation.ToArray();
+    public ProjectorInfo[] ProjectorInformation => _projectorInformation.Values.ToArray();
 }
 
 internal sealed class ProjectorConfigurator<TProjector> where TProjector : class

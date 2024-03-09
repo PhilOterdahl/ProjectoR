@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -11,7 +11,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj" />
       <ProjectReference Include="..\..\src\ProjectoR.EventStore\ProjectoR.EventStore.csproj" />
-      <ProjectReference Include="..\..\src\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj" />
+      <ProjectReference Include="..\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

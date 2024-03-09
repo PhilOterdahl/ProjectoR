@@ -4,12 +4,13 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>Projector.EventStore</AssemblyName>
-        <RootNamespace>Projector.EventStore</RootNamespace>
+        <AssemblyName>ProjectoR.EventStore</AssemblyName>
+        <RootNamespace>ProjectoR.EventStore</RootNamespace>
+        <RepositoryUrl>https://github.com/PhilOterdahl/ProjectoR</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Projector.Core\Projector.Core.csproj" />
+      <ProjectReference Include="../ProjectoR.Core\ProjectoR.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
