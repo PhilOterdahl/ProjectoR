@@ -135,9 +135,9 @@ jobs:
         fetch-depth: 0
     - name: Create pull request from development into main
       if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/development' 
-      run: gh pr create -B main -H development --title '${{ github.event.pull_request.title }}' --body '${{ github.event.pull_request.body }}'
+      run: gh pr create -B main -H development --title 'Merge development into main' --body 'Created by github actions'
       env:
-        GITHUB_TOKEN: ${{ secrets.PULLREQUEST_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create pre release #Release for main branch
       if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/main' 
