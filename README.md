@@ -1,6 +1,7 @@
 ProjectoR
 =======
 
+![DEV](https://github.com/PhilOterdahl/ProjectoR/actions/workflows/main.yml/badge.svg?branch=development)
 ![CI](https://github.com/PhilOterdahl/ProjectoR/actions/workflows/main.yml/badge.svg?branch=main)
 [![NuGet](https://img.shields.io/nuget/dt/projector.svg)](https://www.nuget.org/packages/projector) 
 [![NuGet](https://img.shields.io/nuget/vpre/projector.svg)](https://www.nuget.org/packages/projector)
