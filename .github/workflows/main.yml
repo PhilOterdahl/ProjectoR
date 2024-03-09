@@ -50,7 +50,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: coreNuget
-        path: bin/Release/Core
+        path: Core
         
     - name: Pack EventStore NuGet package
       run: dotnet pack src/ProjectoR.EventStore/ProjectoR.EventStore.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' --no-build --configuration Release --output EventStore
@@ -58,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: eventStoreNuget
-        path: bin/Release/EventStore
+        path: EventStore
         
     - name: Pack EntityFrameworkCore NuGet package
       run: dotnet pack src/ProjectoR.EntityFrameworkCore/ProjectoR.EntityFrameworkCore.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' --no-build --configuration Release --output EntityFrameworkCore
@@ -66,7 +66,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: entityFrameworkCore
-        path: bin/Release/EntityFrameworkCore
+        path: EntityFrameworkCore
         
   release:
     runs-on: ubuntu-latest    
