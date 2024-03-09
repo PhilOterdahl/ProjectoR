@@ -1,12 +1,11 @@
 ProjectoR
 =======
 
-![CI](https://github.com/PhilOterdahl/ProjectoR/workflows/CI/badge.svg)
+![CI](https://github.com/PhilOterdahl/ProjectoR/actions/workflows/main.yml/badge.svg?branch=main)
 [![NuGet](https://img.shields.io/nuget/dt/projector.svg)](https://www.nuget.org/packages/projector) 
 [![NuGet](https://img.shields.io/nuget/vpre/projector.svg)](https://www.nuget.org/packages/projector)
 
 A simple way of writing projections in .NET
-
 
 ## Projector
 
