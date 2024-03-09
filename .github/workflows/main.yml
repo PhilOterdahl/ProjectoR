@@ -129,19 +129,13 @@ jobs:
         prerelease: true
         draft: true
 
-    - name: Create pull request from development into main
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/development' 
-      run: gh pr create -B main -H development --title 'Merge branch development into main' --body 'Created by Github action'
-      env:
-        GITHUB_TOKEN: ${{ secrets.PULLREQUEST_TOKEN }}
-
     - name: Create pre release #Release for main branch
-      if: needs.build.outputs.CommitsSinceVersionSource > 0  && github.ref == 'refs/heads/main' 
+      if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/main' 
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
-        artifacts: "core/*, eventStore/*, entityFrameWorkCore/*"
+        artifacts: "core/*, eventStore/*, entityFrameworkCore/*"
         token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
         prerelease: false
         draft: true

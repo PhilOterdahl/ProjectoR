@@ -1,0 +1,35 @@
+name: Create pr for development into main
+
+on:
+ pull_request:
+    types: [closed]
+    branches: [main, development]
+
+jobs:
+  if_merged:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Check if PR exists
+      id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        prs=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --head 'development' \
+            --base 'main' \
+            --json title \
+            --jq 'length')
+        if ((prs > 0)); then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Create pull request from development into main
+      if: '!steps.check.outputs.skip'
+      run: gh pr create -B main -H development --title ' ${{ github.event.pull_request.title }}' --body ' ${{ github.event.pull_request.body }}'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
