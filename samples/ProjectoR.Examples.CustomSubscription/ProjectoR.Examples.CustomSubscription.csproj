@@ -10,7 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\ProjectoR.Core\ProjectoR.Core.csproj" />
       <ProjectReference Include="..\..\src\ProjectoR.EntityFrameworkCore\ProjectoR.EntityFrameworkCore.csproj" />
-      <ProjectReference Include="..\..\src\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj" />
+      <ProjectReference Include="..\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Tests", "..\tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.CustomSubscription", "..\samples\ProjectoR.Examples.CustomSubscription\ProjectoR.Examples.CustomSubscription.csproj", "{42CA5B3F-4320-4543-BAD6-ED3EE4BB09B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.Common", "ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj", "{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectoR.Examples.Common", "..\samples\ProjectoR.Examples.Common\ProjectoR.Examples.Common.csproj", "{CBB8FBAF-D46A-4AEF-98D2-827B46D3BFFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventStore", "EventStore", "{6AFEA1EC-384C-4F72-B370-ECC37C31D291}"
 EndProject
