@@ -43,26 +43,32 @@ jobs:
       run: dotnet build src/ProjectoR.sln -p:Version='${{ steps.gitversion.outputs.SemVer }}' --configuration Release --no-restore
     - name: Test 
       run: dotnet test src/ProjectoR.sln --no-build --configuration Release
-      
+  
     - name: Pack Core NuGet package
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       run: dotnet pack src/ProjectoR.Core/ProjectoR.Core.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' --no-build --configuration Release --output Core
     - name: Upload Core NuGet package to GitHub
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       uses: actions/upload-artifact@v2
       with:
-        name: coreNuget
+        name: core
         path: Core
         
     - name: Pack EventStore NuGet package
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       run: dotnet pack src/ProjectoR.EventStore/ProjectoR.EventStore.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' --no-build --configuration Release --output EventStore
     - name: Upload EventStore NuGet package to GitHub
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       uses: actions/upload-artifact@v2
       with:
-        name: eventStoreNuget
+        name: eventStore
         path: EventStore
         
     - name: Pack EntityFrameworkCore NuGet package
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       run: dotnet pack src/ProjectoR.EntityFrameworkCore/ProjectoR.EntityFrameworkCore.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' --no-build --configuration Release --output EntityFrameworkCore
     - name: Upload EntityFrameworkCore NuGet package to GitHub
+      if: github.ref == 'refs/heads/main' # only run job if on the main branch   
       uses: actions/upload-artifact@v2
       with:
         name: entityFrameworkCore
