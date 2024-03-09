@@ -3,7 +3,7 @@ name: Create pr for development into main
 on:
  pull_request:
     types: [closed]
-    branches: [main, development]
+    branches: [development]
 
 jobs:
   if_merged:
