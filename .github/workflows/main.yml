@@ -88,25 +88,25 @@ jobs:
       uses: actions/download-artifact@v1.0.0
       with:
         name: core
-    - name: Push Core package to GitHub packages 
+    - name: Push Core package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }}  --source "github"
+      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
 
     - name: Download EventStore nuget package artifact
       uses: actions/download-artifact@v1.0.0
       with:
          name: eventStore
-    - name: Push EventStore package to GitHub packages 
+    - name: Push EventStore package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }}  --source "github"
+      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
 
     - name: Download EntityFrameworkCore nuget package artifact
       uses: actions/download-artifact@v1.0.0
       with:
         name: entityFrameworkCore
-    - name: Push entityFrameworkCore package to GitHub packages 
+    - name: Push entityFrameworkCore package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }}  --source "github"
+      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
     
     #Create release
     - name: Create Release
