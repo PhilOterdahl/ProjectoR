@@ -127,7 +127,6 @@ jobs:
         artifacts: "core/*, eventStore/*, entityFrameWorkCore/*"
         token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
         prerelease: true
-        draft: true
 
     - name: Create pre release #Release for main branch
       if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/main' 
@@ -138,4 +137,3 @@ jobs:
         artifacts: "core/*, eventStore/*, entityFrameworkCore/*"
         token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
         prerelease: false
-        draft: true
