@@ -90,7 +90,7 @@ jobs:
         name: core
     - name: Push Core package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
+      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
     - name: Download EventStore nuget package artifact
       uses: actions/download-artifact@v1.0.0
@@ -98,7 +98,7 @@ jobs:
          name: eventStore
     - name: Push EventStore package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
+      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
     - name: Download EntityFrameworkCore nuget package artifact
       uses: actions/download-artifact@v1.0.0
@@ -106,7 +106,7 @@ jobs:
         name: entityFrameworkCore
     - name: Push entityFrameworkCore package to Nuget packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json"
+      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
     
     #Create release
     - name: Create Release
