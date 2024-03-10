@@ -14,9 +14,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\..\icon.svg" PackagePath="\">
+        <None Include="..\..\icon.png" PackagePath="\">
           <Pack>True</Pack>
-          <Link>icon.svg</Link>
+          <Link>icon.png</Link>
         </None>
         <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
