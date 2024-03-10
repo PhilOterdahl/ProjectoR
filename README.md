@@ -246,11 +246,16 @@ builder
 
 ### Prioritization
 
-When registering a projector, you have the option to assign a priority to it. 
-If a higher priority is set, the projector will be updated before other projectors with lower priorities. However, when the concurrency is set to a value greater than 1, there is a significant chance that projectors will run concurrently, potentially reducing the impact of prioritization.
+When registering a projector, you have the option to assign a priority to it.
+If a higher priority is set, the projector will be updated before other projectors with lower priorities. 
+However, when the concurrency is set to a value greater than 1, there is a significant chance that projectors will run concurrently, potentially reducing the impact of prioritization.
 
+Priority options
 
-### Checkpointing
+- Low
+- Normal
+- Highest
+
 
 ```cs
 builder
@@ -265,13 +270,14 @@ builder
                     eventStoreConfigurator
                         .UseSubscription<StudentProjector>(configure =>
                         {
-                              configure.Priority = ProjectorPriority.Highest;
+                            configure.Priority = ProjectorPriority.Highest;
                         });
                 }
             );
     });
 ```
 
+### Checkpointing
 
 #### Stratergies
 There are 3 different checkpointing stratergies supported.
@@ -281,7 +287,6 @@ There are 3 different checkpointing stratergies supported.
 - AfterBatch
 
 The default stratergy is set to save a checkpoint after every event but can be changed when registering a projector.
-
 
 ```cs
 builder
