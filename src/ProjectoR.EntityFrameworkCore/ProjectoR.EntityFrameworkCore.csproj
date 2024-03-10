@@ -5,7 +5,21 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RepositoryUrl>https://github.com/PhilOterdahl/ProjectoR</RepositoryUrl>
+        <PackageIcon>icon.svg</PackageIcon>
+        <Description>ProjectoR.EntityFrameworkCore simplifies the integration of Entity Framework Core by providing essential support for utilizing it as a storage solution for saving checkpoints. This NuGet package empowers developers to seamlessly incorporate Entity Framework Core into their applications, streamlining the process of managing checkpoints.</Description>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\icon.svg" PackagePath="\">
+            <Pack>True</Pack>
+            <Link>icon.svg</Link>
+        </None>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\ProjectoR.Core\ProjectoR.Core.csproj" />
