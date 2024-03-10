@@ -3,6 +3,8 @@ ProjectoR
 
 ![DEV](https://github.com/PhilOterdahl/ProjectoR/actions/workflows/main.yml/badge.svg?branch=development)
 ![CI](https://github.com/PhilOterdahl/ProjectoR/actions/workflows/main.yml/badge.svg?branch=main)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ProjectoR.Core.svg)](https://www.nuget.org/packages/ProjectoR.Core)
+[![NuGet](https://img.shields.io/nuget/vpre/ProjectoR.Core.svg)](https://www.nuget.org/packages/ProjectoR.Core)
 
 A simple way of writing projections in .NET
 
