@@ -5,8 +5,22 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RepositoryUrl>https://github.com/PhilOterdahl/ProjectoR</RepositoryUrl>
+        <Description>A simple way of writing projections in .NET.</Description>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\icon.png" PackagePath="\">
+          <Pack>True</Pack>
+          <Link>icon.png</Link>
+        </None>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
     <ItemGroup>
       <PackageReference Include="Humanizer.Core" Version="2.14.1" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
@@ -18,5 +32,5 @@
         <InternalsVisibleTo Include="ProjectoR.EntityFrameworkCore" />
         <InternalsVisibleTo Include="ProjectoR.Tests" />
     </ItemGroup>
-
+    
 </Project>
