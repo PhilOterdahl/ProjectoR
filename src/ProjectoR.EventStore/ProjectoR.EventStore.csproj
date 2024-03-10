@@ -7,8 +7,22 @@
         <AssemblyName>ProjectoR.EventStore</AssemblyName>
         <RootNamespace>ProjectoR.EventStore</RootNamespace>
         <RepositoryUrl>https://github.com/PhilOterdahl/ProjectoR</RepositoryUrl>
+        <PackageIcon>icon.svg</PackageIcon>
+        <Description>ProjectoR.EventStore enhances the integration of EventStoreDB with Projector, offering seamless support for event subscription and checkpoint management. This NuGet package facilitates a streamlined experience for developers, allowing efficient handling of events and the storage of checkpoints directly in EventStoreDBcheckpoints in EventStoreDB.</Description>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\icon.svg" PackagePath="\">
+            <Pack>True</Pack>
+            <Link>icon.svg</Link>
+        </None>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
     <ItemGroup>
       <ProjectReference Include="../ProjectoR.Core\ProjectoR.Core.csproj" />
     </ItemGroup>
