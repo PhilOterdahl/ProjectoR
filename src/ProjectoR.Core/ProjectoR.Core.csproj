@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <RepositoryUrl>https://github.com/PhilOterdahl/ProjectoR</RepositoryUrl>
         <Description>A simple way of writing projections in .NET.</Description>
-        <PackageIcon>icon.svg</PackageIcon>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <PropertyGroup>
