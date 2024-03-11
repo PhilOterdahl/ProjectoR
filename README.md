@@ -396,6 +396,39 @@ To use ProjectoR with EventStoreDB You should install [ProjectoR.EvenStore](http
 
 ### EntityFrameworkCore
 
+To use ProjectoR with EntityFrameworkCore You should install [ProjectoR.EntityFrameworkCore](https://www.nuget.org/packages/ProjectoR.EntityFrameworkCore):
+
+To start using Entity Framework Core for storing checkpoints, follow these steps:
+
+ - Implement the ICheckpointingContext interface for your dbContext from the ProjectoR.EntityFrameworkCore.Checkpointing namespace.
+
+ - Configure the CheckpointStateConfiguration in your dbContext. 
+
+ - In your dependency injection setup, register ProjectoR with Entity Framework Core for checkpointing
+
+```cs
+public class ApplicationContext(DbContextOptions<ApplicationContext> options)
+    : DbContext(options), ICheckpointingContext
+{
+    public DbSet<CheckpointState> Checkpoints { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new CheckpointStateConfiguration());
+    }
+}
+```
+
+```cs
+builder
+    .Services
+    .AddProjectoR(configurator =>
+    {
+        configurator.UseEntityFramework(efConfiguration => efConfiguration.UseEntityFrameworkCheckpointing<ApplicationContext>());
+    });
+```
+
+
 ### CustomSubscription
 
 ProjectoR supports custom subscriptions this way if there is an event store or event streaming provider that is not supported a custom subscription can be written to integrate with it. 
