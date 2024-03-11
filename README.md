@@ -388,10 +388,57 @@ builder
     });
 ```
 
-
 ### EventStoreDB
 
 To use ProjectoR with EventStoreDB You should install [ProjectoR.EvenStore](https://www.nuget.org/packages/ProjectoR.EventStore):
+
+In your dependency injection setup, register ProjectoR with EventStore.
+
+You will need to pass the connection string for EventStoreDB as the first parameter.
+
+To use EventStoreDB as a storage for checkpoints call the .UseEventStoreCheckpointing() method on the eventStoreConfigurator.
+
+To subscribe to events from EventStoreDB for a projector call the method UseSubscription<TProjector> with your projector as a type parameter.
+
+
+```cs
+builder
+    .Services
+    .AddProjectoR(configurator =>
+        {
+            configurator.SerializationOptions.UseCustomEventTypeResolver<EventTypeResolver>();
+            configurator
+                .UseEventStore(
+                    builder.Configuration.GetConnectionString("EventStoreDB"),
+                    eventStoreConfigurator =>
+                    {
+                        eventStoreConfigurator
+                            .UseEventStoreCheckpointing()
+                            .UseSubscription<StudentProjector>(configure =>
+                            {
+                                configure.Priority = ProjectorPriority.Highest;
+                                configure.BatchingOptions.BatchSize = 100;
+                                configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
+                                configure.CheckpointingOptions.CheckpointAfterBatch();
+                            })
+                            .UseSubscription<AmountOfStudentsPerCityProjector>(configure =>
+                            {
+                                configure.Priority = ProjectorPriority.Normal;
+                                configure.BatchingOptions.BatchSize = 100;
+                                configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
+                                configure.CheckpointingOptions.CheckpointAfterBatch();
+                            })
+                            .UseSubscription<AmountOfStudentsPerCountryProjector>(configure =>
+                            {
+                                configure.Priority = ProjectorPriority.Lowest;
+                                configure.BatchingOptions.BatchSize = 100;
+                                configure.BatchingOptions.BatchTimeout = TimeSpan.FromMilliseconds(100);
+                                configure.CheckpointingOptions.CheckpointAfterBatch();
+                            });
+                    }
+                );
+    });
+```
 
 
 ### EntityFrameworkCore
