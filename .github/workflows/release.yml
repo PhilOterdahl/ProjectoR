@@ -74,7 +74,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/development' && needs.build.outputs.CommitsSinceVersionSource > 0
     steps:  
-    #Push NuGet package to nuget packages
+    #Push NuGet package to NuGet feed
     - name: Prep package
       run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
       
@@ -99,10 +99,10 @@ jobs:
     - name: Push entityFrameworkCore package to Nuget packages 
       run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
     
-    #Create pre release
-    - name: Create pre release #Pre release for development branch
+    - name: Create pre release
       uses: ncipollo/release-action@v1
       with:
+        commit: 'development'
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
         artifacts: "core/*, eventStore/*, entityFrameworkCore/*"
@@ -115,35 +115,35 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 
     steps:  
-    #Push NuGet package to Nuget packages
-    - name: Prep package
-      run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
+    #Push NuGet packages to NuGet feed
+    # - name: Prep package
+    #   run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
       
-    - name: Download Core nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: core
-    - name: Push Core package to Nuget packages 
-      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download Core nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: core
+    # - name: Push Core package to Nuget packages 
+    #   run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
-    - name: Download EventStore nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-         name: eventStore
-    - name: Push EventStore package to Nuget packages 
-      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download EventStore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #      name: eventStore
+    # - name: Push EventStore package to Nuget packages 
+    #   run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
-    - name: Download EntityFrameworkCore nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: entityFrameworkCore
-    - name: Push entityFrameworkCore package to Nuget packages 
-      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download EntityFrameworkCore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: entityFrameworkCore
+    # - name: Push entityFrameworkCore package to Nuget packages 
+    #   run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
     
-    #Create release
-    - name: Create release #Release for main branch
+    - name: Create release
       uses: ncipollo/release-action@v1
       with:
+        commit: 'main'
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
         artifacts: "core/*, eventStore/*, entityFrameworkCore/*"

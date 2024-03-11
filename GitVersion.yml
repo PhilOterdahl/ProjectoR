@@ -12,7 +12,7 @@ branches:
     tag: beta
     increment: Patch
     regex: ^dev(elop)?(ment)?$
-    is-release-branch: false
+    is-release-branch: true
     source-branches: []
   hotfix:
     tag: ''
