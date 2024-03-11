@@ -74,66 +74,102 @@ jobs:
         name: entityFrameworkCore
         path: EntityFrameworkCore
         
-  release:
-    runs-on: ubuntu-latest    
+  pre_release:
+    runs-on: ubuntu-latest
+    environment: development 
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' # only run job if on main or development branch      
-    
+    if: github.ref == 'refs/heads/development' && needs.build.outputs.CommitsSinceVersionSource > 0
     steps:  
     #Push NuGet package to GitHub packages
-    - name: Prep package
-      run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
+    # - name: Prep package
+    #   run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
       
-    - name: Download Core nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: core
-    - name: Push Core package to Nuget packages 
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download Core nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: core
+    # - name: Push Core package to Nuget packages 
+    #   run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
-    - name: Download EventStore nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-         name: eventStore
-    - name: Push EventStore package to Nuget packages 
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download EventStore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #      name: eventStore
+    # - name: Push EventStore package to Nuget packages 
+    #   run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
-    - name: Download EntityFrameworkCore nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: entityFrameworkCore
-    - name: Push entityFrameworkCore package to Nuget packages 
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    # - name: Download EntityFrameworkCore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: entityFrameworkCore
+    # - name: Push entityFrameworkCore package to Nuget packages 
+    #   run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
     
     #Create release
-    - name: Create Release
-      if: 1 == 0 #needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.NUGET_PACKAGE_TOKEN }} 
-      with:
-        tag_name: ${{ needs.build.outputs.Version }}
-        release_name: Release ${{ needs.build.outputs.Version }}
+    # - name: Create Release
+    #   if: 1 == 0 #needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change
+      # uses: actions/create-release@v1
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.NUGET_PACKAGE_TOKEN }} 
+      # with:
+      #   tag_name: ${{ needs.build.outputs.Version }}
+      #   release_name: Release ${{ needs.build.outputs.Version }}
+      #   prerelease: false
 
-    - name: Create pre release #Pre release for development branch
-      if: needs.build.outputs.CommitsSinceVersionSource > 0  && github.ref == 'refs/heads/development' 
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ needs.build.outputs.Version }}
-        name: Release ${{ needs.build.outputs.Version }}
-        artifacts: "core/*, eventStore/*, entityFrameWorkCore/*"
-        token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
-        prerelease: true
+      - name: Create pre release #Pre release for development branch
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.build.outputs.Version }}
+          name: Release ${{ needs.build.outputs.Version }}
+          artifacts: "core/*, eventStore/*, entityFrameWorkCore/*"
+          token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
+          prerelease: true
 
-    - name: Create pre release #Release for main branch
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 && github.ref == 'refs/heads/main' 
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ needs.build.outputs.Version }}
-        name: Release ${{ needs.build.outputs.Version }}
-        artifacts: "core/*, eventStore/*, entityFrameworkCore/*"
-        token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
-        prerelease: false
+  release:
+    runs-on: ubuntu-latest 
+    environment: production 
+    needs: build
+    if: github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 
+    steps:  
+    #Push NuGet package to GitHub packages
+    # - name: Prep package
+    #   run: dotnet nuget add source --username PhilOterdahl --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/PhilOterdahl/index.json"
+      
+    # - name: Download Core nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: core
+    # - name: Push Core package to Nuget packages 
+    #   run: dotnet nuget push core/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+
+    # - name: Download EventStore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #      name: eventStore
+    # - name: Push EventStore package to Nuget packages 
+    #   run: dotnet nuget push eventStore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+
+    # - name: Download EntityFrameworkCore nuget package artifact
+    #   uses: actions/download-artifact@v1.0.0
+    #   with:
+    #     name: entityFrameworkCore
+    # - name: Push entityFrameworkCore package to Nuget packages 
+    #   run: dotnet nuget push entityFrameworkCore/*.nupkg --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }}  --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+    
+    #Create release
+    # - name: Create Release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.NUGET_PACKAGE_TOKEN }} 
+    #   with:
+    #     tag_name: ${{ needs.build.outputs.Version }}
+    #     release_name: Release ${{ needs.build.outputs.Version }}
+
+      - name: Create release #Release for main branch
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.build.outputs.Version }}
+          name: Release ${{ needs.build.outputs.Version }}
+          artifacts: "core/*, eventStore/*, entityFrameworkCore/*"
+          token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
+          prerelease: false
