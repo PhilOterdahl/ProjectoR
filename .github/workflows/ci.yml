@@ -8,15 +8,30 @@ jobs:
   build:
     runs-on: ubuntu-latest    
     outputs: 
-      Version: ${{ steps.gitversion.outputs.SemVer }}
-      CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }} 
+        Version: ${{ steps.gitversion.outputs.SemVer }}
+        CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}
 
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0 #fetch-depth is needed for GitVersion
+        
+    #Install and calculate the new version with GitVersion  
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0
+      with:
+        versionSpec: '5.x'
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v0
+      id: gitversion # step id used as reference for output values TEST
+      with:
+        useConfigFile: true
+    - name: Display GitVersion outputs
+      run: |
+        echo "Version: ${{ steps.gitversion.outputs.SemVer }}"
+        echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
    
-    #Build/pack the project
+    #Build and test
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
