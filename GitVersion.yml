@@ -1,0 +1,24 @@
+mode: ContinuousDelivery
+assembly-versioning-scheme: MajorMinorPatch
+branches:
+  main:
+    tag: ''
+    increment: Minor
+    is-release-branch: true
+    source-branches:
+    - development
+    - hotfix
+  development:
+    tag: beta
+    increment: Patch
+    regex: ^dev(elop)?(ment)?$
+    is-release-branch: false
+    source-branches: []
+  hotfix:
+    tag: ''
+    increment: Patch
+    regex: ^hotfix*
+    is-release-branch: false
+ignore:
+  sha: []
+merge-message-formats: {}
